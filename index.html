@@ -174,8 +174,27 @@
   main{width:min(1380px,100%)}
   #inventoryList{grid-template-columns:repeat(3,minmax(0,1fr))}
 }
+
+/* v5.1 professional profile + account hub */
+.account-hub{display:grid;gap:13px}
+.account-hero{position:relative;overflow:hidden;border-radius:24px;padding:20px;background:linear-gradient(135deg,#241b45,#6b4eff 68%,#9c8cff);color:#fff;box-shadow:0 18px 42px rgba(80,57,186,.22)}
+.account-hero:after{content:"";position:absolute;width:180px;height:180px;border-radius:50%;right:-68px;top:-75px;background:rgba(255,255,255,.10)}
+.account-hero-top{position:relative;z-index:1;display:flex;align-items:center;gap:14px}
+.account-hero .profile-avatar-large{border-color:rgba(255,255,255,.28);background:rgba(255,255,255,.12)}
+.account-hero-copy{min-width:0;flex:1}.account-hero-copy h3{margin:0;font-size:18px}.account-hero-copy p{margin:4px 0 0;font-size:10.5px;opacity:.78;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.account-uid{margin-top:10px;display:inline-flex;align-items:center;gap:6px;padding:6px 9px;border-radius:999px;background:rgba(255,255,255,.14);font-size:9.5px;font-weight:850}
+.account-status-chip{margin-left:auto;align-self:flex-start;padding:6px 9px;border-radius:999px;background:rgba(255,255,255,.16);font-size:8.8px;font-weight:900;text-transform:capitalize}
+.plan-card{border:1px solid #e8e3ff;border-radius:20px;padding:15px;background:linear-gradient(145deg,#faf8ff,#fff);box-shadow:0 8px 22px rgba(76,57,156,.06)}
+.plan-card-top{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}.plan-card-label{font-size:9px;color:var(--muted);font-weight:850;text-transform:uppercase;letter-spacing:.5px}.plan-name{font-size:23px;font-weight:950;color:var(--primary);margin-top:3px}.plan-status{padding:6px 9px;border-radius:999px;background:#e9fbf3;color:#0a8c5c;font-size:8.5px;font-weight:900;text-transform:capitalize}
+.plan-meta{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:13px}.plan-meta div{background:#fff;border:1px solid #eeebf8;border-radius:13px;padding:10px}.plan-meta span{display:block;font-size:8.5px;color:var(--muted)}.plan-meta b{display:block;font-size:10px;margin-top:3px;overflow-wrap:anywhere}
+.hub-section{border:1px solid var(--line);background:#fff;border-radius:19px;padding:14px}.hub-section-title{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px}.hub-section-title b{font-size:12px}.hub-section-title span{font-size:9px;color:var(--muted)}
+.hub-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}.hub-tile{border:1px solid #ece9f5;background:#faf9fe;border-radius:15px;padding:12px;text-align:left}.hub-tile b{display:block;font-size:10.5px}.hub-tile span{display:block;color:var(--muted);font-size:8.8px;margin-top:3px;line-height:1.35}.hub-tile .ui-icon{width:19px;height:19px;color:var(--primary);margin-bottom:7px}
+.account-detail-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}.account-detail{padding:11px 12px;border-radius:14px;background:#fafafd;border:1px solid var(--line)}.account-detail span{display:block;font-size:8.5px;color:var(--muted)}.account-detail b{display:block;font-size:10.5px;margin-top:4px;overflow-wrap:anywhere}
+.support-access-box{border:1px solid #dfeafb;background:#f6faff;border-radius:17px;padding:13px}.support-access-box .row{align-items:flex-start}.support-access-box b{font-size:11px}.support-access-box p{margin:3px 0 0;font-size:9px;color:#60758f;line-height:1.4}
+.support-access-actions{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-top:10px}.support-access-actions button{padding:9px 7px;font-size:9px}
+@media (min-width:960px){.account-hub{grid-template-columns:1.05fr .95fr}.account-hero,.plan-card{height:100%}.hub-section.full{grid-column:1/-1}.account-detail-grid{grid-template-columns:repeat(4,1fr)}.hub-grid{grid-template-columns:repeat(4,1fr)}}
 </style><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script></head><body><div id="authGate" class="auth-gate"><div class="auth-card"><div class="auth-logo">B</div><h2>BIXNOII Cloud</h2><p>Sign in to keep your business data safe and synced across mobile, web and future Windows app.</p><div class="auth-tabs"><button id="loginTab" class="auth-tab active" onclick="setAuthMode('login')">Login</button><button id="signupTab" class="auth-tab" onclick="setAuthMode('signup')">Create account</button></div><div class="form"><div class="field"><label>Email</label><input id="authEmail" type="email" autocomplete="email" placeholder="you@example.com"></div><div class="field"><label>Password</label><input id="authPassword" type="password" autocomplete="current-password" placeholder="Minimum 6 characters"></div><button id="authSubmitBtn" class="primary" onclick="submitAuth()">Login</button><div id="authMessage"></div></div></div></div><div class="app">
-<header class="topbar"><button class="brand brand-button" onclick="openProfile()" aria-label="Business profile"><div id="brandLogo" class="logo">B</div><div><h1 id="brandName">BIXNOII</h1><small>Business Manager • Tap to edit profile</small></div></button><div class="top-actions"><span id="cloudStatusBadge" class="cloud-badge hidden"><span id="cloudDot" class="cloud-dot"></span><span id="cloudStatusText">Cloud</span></span><button class="iconbtn" onclick="openMoreQuick()"><span class="ui-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="5" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="19" r="1"/></svg></span></button></div></header>
+<header class="topbar"><button class="brand brand-button" onclick="openProfile()" aria-label="Business profile"><div id="brandLogo" class="logo">B</div><div><h1 id="brandName">BIXNOII</h1><small>Business Manager • Tap for profile & account</small></div></button><div class="top-actions"><span id="cloudStatusBadge" class="cloud-badge hidden"><span id="cloudDot" class="cloud-dot"></span><span id="cloudStatusText">Cloud</span></span><button class="iconbtn" onclick="openMoreQuick()"><span class="ui-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="5" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="19" r="1"/></svg></span></button></div></header>
 <main>
 <section id="home" class="page">
   <div class="hero"><small>Today's total orders</small><h2 id="heroOrders">0</h2><div class="sub" id="heroSub">Meesho 0 • Flipkart 0 • Amazon 0</div></div>
@@ -294,7 +313,7 @@ let raw=localStorage.getItem(LS_KEY)||localStorage.getItem('bixnoii_v2');
 let data=normalize(raw?JSON.parse(raw):seed);
 function save(){localStorage.setItem(LS_KEY,JSON.stringify(data));renderAll();scheduleCloudSave()}
 
-const APP_VERSION='5.0';
+const APP_VERSION='5.1';
 const SUPABASE_URL='https://tducbuscraurojyewliy.supabase.co';
 const SUPABASE_KEY='sb_publishable_BgTE00AlTNV39wm4JBto0g_q2doc1wk';
 const sb=window.supabase?.createClient(SUPABASE_URL,SUPABASE_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
@@ -718,37 +737,79 @@ async function shareDataUrl(src,title='Document'){try{if(window.AndroidShare?.sh
 function viewImage(dataUrl,title){modal(`<h3>${esc(title)}</h3><img src="${dataUrl}" style="width:100%;max-height:70vh;object-fit:contain;border-radius:18px"><div class="actions"><button class="secondary" onclick="closeModal()">Close</button><button class="primary" onclick="shareDataUrl('${dataUrl}','${esc(title)}')">${appIcon('share')} Share</button></div>`) }
 function compressDataUrl(src,maxW=1000,quality=.72){return new Promise(res=>{const img=new Image();img.onload=()=>{const scale=Math.min(1,maxW/img.width);const c=document.createElement('canvas');c.width=Math.round(img.width*scale);c.height=Math.round(img.height*scale);c.getContext('2d').drawImage(img,0,0,c.width,c.height);res(c.toDataURL('image/jpeg',quality))};img.onerror=()=>res(src);img.src=src})}
 let pendingProfilePhoto=null;
-function openProfile(){const p=data.profile||{};modal(`<div class="profile-head"><div class="profile-avatar-large">${p.photo?`<img src="${assetUrl(p.photo)}">`:appIcon('user')}</div><div><h3 style="margin:0">${esc(p.ownerName||'Your Profile')}</h3><div class="muted">${esc(p.businessName||'BIXNOII Business')}</div></div></div><div class="profile-info"><div><span>${appIcon('idcard')} UID</span><b>${esc(p.uid||'Loading…')}</b></div><div><span>${appIcon('phone')} Mobile</span><b>${esc(p.phone||'Not added')}</b></div><div><span>${appIcon('mail')} Email</span><b>${esc(p.email||'Not added')}</b></div><div><span>${appIcon('building')} Business</span><b>${esc(p.businessName||'Not added')}</b></div></div><div class="actions"><button class="secondary" onclick="openAccountCenter()">Account & Plan</button><button class="secondary" onclick="openHelpCenter()">Help & Support</button></div><div class="actions"><button class="secondary" onclick="closeModal()">Close</button><button class="primary" onclick="openEditProfile()">Edit Profile</button></div>`)}
+async function openProfile(){
+  const p=data.profile||{};
+  modal('<h3>Profile & Account</h3><div class="card"><div class="muted">Loading account details…</div></div>');
+  let x=null;
+  try{const out=await sb.rpc('customer_account_summary');if(!out.error)x=out.data}catch(e){}
+  x=x||{uid:p.uid,business_name:p.businessName,owner_name:p.ownerName,email:p.email,phone:p.phone,account_status:p.accountStatus||'active',plan_name:p.planName||'Free',subscription_status:p.subscriptionStatus||'active'};
+  const accessActive=x?.support_access_until&&new Date(x.support_access_until)>new Date();
+  const accessText=accessActive?('Granted until '+new Date(x.support_access_until).toLocaleString('en-IN')):'Not granted';
+  const avatar=p.photo?`<img src="${assetUrl(p.photo)}">`:appIcon('user');
+  const renewal=x?.renewal_date||x?.subscription_end||'—';
+  const cycle=x?.billing_cycle||'—';
+  const amount=Number(x?.subscription_amount||0)>0?money(x.subscription_amount):'—';
+  modal(`<div class="account-hub">
+    <div class="account-hero">
+      <div class="account-hero-top">
+        <div class="profile-avatar-large">${avatar}</div>
+        <div class="account-hero-copy">
+          <h3>${esc(p.businessName||x?.business_name||'BIXNOII')}</h3>
+          <p>${esc(p.ownerName||x?.owner_name||'Your business account')}</p>
+          <div class="account-uid">${appIcon('idcard')} UID ${esc(x?.uid||p.uid||'—')}</div>
+        </div>
+        <div class="account-status-chip">${esc(x?.account_status||'active')}</div>
+      </div>
+    </div>
+
+    <div class="plan-card">
+      <div class="plan-card-top">
+        <div><div class="plan-card-label">Current Plan</div><div class="plan-name">${esc(x?.plan_name||'Free')}</div></div>
+        <div class="plan-status">${esc(x?.subscription_status||'active')}</div>
+      </div>
+      <div class="plan-meta">
+        <div><span>Renewal / End</span><b>${esc(renewal)}</b></div>
+        <div><span>Billing Cycle</span><b>${esc(cycle)}</b></div>
+        <div><span>Plan Amount</span><b>${esc(amount)}</b></div>
+      </div>
+    </div>
+
+    <div class="hub-section full">
+      <div class="hub-section-title"><b>Account Details</b><span>BIXNOII account information</span></div>
+      <div class="account-detail-grid">
+        <div class="account-detail"><span>Email</span><b>${esc(p.email||x?.email||'Not added')}</b></div>
+        <div class="account-detail"><span>Mobile</span><b>${esc(p.phone||x?.phone||'Not added')}</b></div>
+        <div class="account-detail"><span>Member Since</span><b>${x?.created_at?new Date(x.created_at).toLocaleDateString('en-IN'):'—'}</b></div>
+        <div class="account-detail"><span>Last Cloud Sync</span><b>${x?.last_sync_at?new Date(x.last_sync_at).toLocaleString('en-IN'):'Never'}</b></div>
+      </div>
+    </div>
+
+    <div class="hub-section full">
+      <div class="hub-section-title"><b>Quick Actions</b><span>Manage your account</span></div>
+      <div class="hub-grid">
+        <button class="hub-tile" onclick="openEditProfile()">${appIcon('user')}<b>Edit Profile</b><span>Business name, owner, phone and photo</span></button>
+        <button class="hub-tile" onclick="openHelpCenter()">${appIcon('claim')}<b>Help & Support</b><span>Tickets, replies and troubleshooting</span></button>
+        <button class="hub-tile" onclick="openChangePassword()">${appIcon('idcard')}<b>Security</b><span>Change your account password</span></button>
+        <button class="hub-tile" onclick="openDiagnostics()">${appIcon('cloud')}<b>Diagnostics</b><span>App version, sync and device info</span></button>
+      </div>
+    </div>
+
+    <div class="hub-section full">
+      <div class="hub-section-title"><b>Support Access</b><span>Temporary & controlled</span></div>
+      <div class="support-access-box">
+        <div class="row"><div><b>${accessActive?'Support access is ON':'Support access is OFF'}</b><p>${esc(accessText)}. Enable this only when BIXNOII support needs to troubleshoot your account.</p></div><span class="pill ${accessActive?'green':'gray'}">${accessActive?'Active':'Off'}</span></div>
+        <div class="support-access-actions"><button class="secondary" onclick="setSupportAccess(30)">Allow 30 min</button><button class="secondary" onclick="setSupportAccess(1440)">Allow 24 hours</button><button class="danger" onclick="setSupportAccess(0)">Revoke</button></div>
+      </div>
+    </div>
+
+    <div class="actions full"><button class="secondary" onclick="closeModal()">Close</button></div>
+  </div>`)
+}
 function openEditProfile(){pendingProfilePhoto=null;const p=data.profile||{};modal(`<h3>Edit Profile</h3><div class="form"><div class="profile-photo-edit"><div id="profilePhotoPreview" class="profile-avatar-large">${p.photo?`<img src="${assetUrl(p.photo)}">`:appIcon('user')}</div><div style="flex:1"><label class="secondary profile-upload">${appIcon('camera')} Camera<input type="file" accept="image/*" capture="environment" hidden onchange="stageProfilePhoto(event)"></label><label class="primary profile-upload">${appIcon('gallery')} Gallery<input type="file" accept="image/*" hidden onchange="stageProfilePhoto(event)"></label></div></div><div class="field"><label>Business / Profile Name (shown at top)</label><input id="prof_business" value="${esc(p.businessName||'')}" placeholder="e.g. KP Enterprises"></div><div class="field"><label>Owner / Profile Name</label><input id="prof_owner" value="${esc(p.ownerName||'')}" placeholder="Your name"></div><div class="field"><label>Mobile Number</label><input id="prof_phone" type="tel" inputmode="numeric" value="${esc(p.phone||'')}" placeholder="10-digit mobile number"></div><div class="field"><label>Email Address</label><input id="prof_email" type="email" value="${esc(p.email||'')}" placeholder="name@example.com"></div><div class="actions"><button class="secondary" onclick="openProfile()">Cancel</button><button class="primary" onclick="saveProfile()">Save Profile</button></div></div>`)}
 async function stageProfilePhoto(e){const f=e.target.files?.[0];if(!f)return;pendingProfilePhoto=await prepareFileAsset(f,'profile',true);const el=$('profilePhotoPreview');if(el)el.innerHTML=`<img src="${assetUrl(pendingProfilePhoto)}">`}
 async function saveProfile(){const email=$('prof_email').value.trim(),phone=$('prof_phone').value.trim();if(email&&!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){toast('Enter a valid email');return}if(phone&&phone.replace(/\D/g,'').length<10){toast('Enter a valid mobile number');return}const old=data.profile||{};data.profile={businessName:$('prof_business').value.trim(),ownerName:$('prof_owner').value.trim(),phone,email,photo:pendingProfilePhoto||old.photo||'',uid:old.uid||null,accountStatus:old.accountStatus||'active'};pendingProfilePhoto=null;save();await syncCloudProfileMeta(true);openProfile();toast('Profile updated')}
 let pendingSupportAttachment=null;
-async function openAccountCenter(){
-  if(!sb||!cloudUser)return;
-  modal('<h3>Account & Plan</h3><div class="card"><div class="muted">Loading account details…</div></div>');
-  const {data:x,error}=await sb.rpc('customer_account_summary');
-  if(error){toast('Unable to load account');return}
-  const access=x?.support_access_until&&new Date(x.support_access_until)>new Date()?('Granted until '+new Date(x.support_access_until).toLocaleString('en-IN')):'Not granted';
-  modal(`<h3>Account & Plan</h3><div class="profile-info">
-    <div><span>UID</span><b>${esc(x?.uid||'—')}</b></div>
-    <div><span>Account Status</span><b>${esc(x?.account_status||'active')}</b></div>
-    <div><span>Current Plan</span><b>${esc(x?.plan_name||'Free')}</b></div>
-    <div><span>Subscription</span><b>${esc(x?.subscription_status||'active')}</b></div>
-    <div><span>Start Date</span><b>${esc(x?.subscription_start||'—')}</b></div>
-    <div><span>End Date</span><b>${esc(x?.subscription_end||'—')}</b></div>
-    <div><span>Renewal Date</span><b>${esc(x?.renewal_date||'—')}</b></div>
-    <div><span>Billing Cycle</span><b>${esc(x?.billing_cycle||'—')}</b></div>
-    <div><span>Support Access</span><b>${esc(access)}</b></div>
-    <div><span>App Version</span><b>${APP_VERSION}</b></div>
-    <div><span>Last Cloud Sync</span><b>${x?.last_sync_at?new Date(x.last_sync_at).toLocaleString('en-IN'):'Never'}</b></div>
-  </div>
-  <div class="section-title"><h3>Support Access Permission</h3></div>
-  <div class="smallnote">Support access is temporary and should only be enabled when you want BIXNOII support to troubleshoot your account.</div>
-  <div class="actions"><button class="secondary" onclick="setSupportAccess(30)">Allow 30 min</button><button class="secondary" onclick="setSupportAccess(1440)">Allow 24 hours</button><button class="danger" onclick="setSupportAccess(0)">Revoke</button></div>
-  <div class="section-title"><h3>Security</h3></div>
-  <div class="actions"><button class="secondary" onclick="openChangePassword()">Change Password</button><button class="secondary" onclick="openDiagnostics()">Diagnostics</button></div>
-  <button class="secondary" style="width:100%;margin-top:12px" onclick="openProfile()">Back</button>`)
-}
+async function openAccountCenter(){return openProfile()}
 async function setSupportAccess(minutes){
   const {error}=await sb.rpc('customer_grant_support_access',{p_minutes:Number(minutes)});
   if(error){toast(error.message);return}
@@ -796,11 +857,11 @@ async function openTicketDetail(id){
 }
 async function replyTicket(id){const m=$('ticketReply').value.trim();if(!m){toast('Type a reply');return}const {error}=await sb.rpc('customer_add_ticket_message',{p_ticket_id:Number(id),p_message:m});if(error){toast(error.message);return}toast('Reply sent');openTicketDetail(id)}
 function openClaims(){modal(`<h3>Claims</h3>${data.claims.slice().reverse().map(x=>`<div class="card" style="box-shadow:none;background:#f8f8fc"><div class="row"><div><b>${esc(x.platform||'Claim')}</b><div class="muted">${esc(x.note||x.status||'Pending')}</div></div><span class="pill amber">${esc(x.status||'Pending')}</span></div></div>`).join('')||empty('No claims','Claims can be tracked here')}<button class="secondary" style="width:100%" onclick="openMoreQuick()">Back</button>`)}
-function openMoreQuick(){modal(`<h3>More</h3><div class="menu-grid"><button class="menu-tile" onclick="openHelpCenter()">${appIcon('claim')}<b>Help & Support</b><span>Tickets, replies & troubleshooting</span></button><button class="menu-tile" onclick="openAccountCenter()">${appIcon('user')}<b>Account & Plan</b><span>Plan, security & support access</span></button><button class="menu-tile" onclick="openBusinessSummary()">${appIcon('chart')}<b>Business Summary</b><span>Charts, trends & comparisons</span></button><button class="menu-tile" onclick="openPurchaseModal()">${appIcon('cart')}<b>Stock Purchase</b><span>Add product stock + GST + invoice</span></button><button class="menu-tile" onclick="openPurchaseHistory()">${appIcon('archive')}<b>Purchase History</b><span>Month & filter enabled</span></button><button class="menu-tile" onclick="openDocuments()">${appIcon('folder')}<b>Business Documents</b><span>GST, PAN, FSSAI and more</span></button><button class="menu-tile" onclick="openInvoices()">${appIcon('file')}<b>Invoice History</b><span>Month & source filter</span></button><button class="menu-tile" onclick="openClaims()">${appIcon('claim')}<b>Claims</b><span>Claim tracking</span></button><button class="menu-tile" onclick="openBackupMenu()">${appIcon('cloud')}<b>Backup & Sync</b><span>Cloud + local backup</span></button><button class="menu-tile" onclick="logoutCloud()">${appIcon('user')}<b>Logout</b><span>${esc(cloudUser?.email||'Cloud account')}</span></button></div><button class="secondary" style="width:100%;margin-top:12px" onclick="closeModal()">Close</button>`)}
+function openMoreQuick(){modal(`<h3>More</h3><div class="menu-grid"><button class="menu-tile" onclick="openHelpCenter()">${appIcon('claim')}<b>Help & Support</b><span>Tickets, replies & troubleshooting</span></button><button class="menu-tile" onclick="openBusinessSummary()">${appIcon('chart')}<b>Business Summary</b><span>Charts, trends & comparisons</span></button><button class="menu-tile" onclick="openPurchaseModal()">${appIcon('cart')}<b>Stock Purchase</b><span>Add product stock + GST + invoice</span></button><button class="menu-tile" onclick="openPurchaseHistory()">${appIcon('archive')}<b>Purchase History</b><span>Month & filter enabled</span></button><button class="menu-tile" onclick="openDocuments()">${appIcon('folder')}<b>Business Documents</b><span>GST, PAN, FSSAI and more</span></button><button class="menu-tile" onclick="openInvoices()">${appIcon('file')}<b>Invoice History</b><span>Month & source filter</span></button><button class="menu-tile" onclick="openClaims()">${appIcon('claim')}<b>Claims</b><span>Claim tracking</span></button><button class="menu-tile" onclick="openBackupMenu()">${appIcon('cloud')}<b>Backup & Sync</b><span>Cloud + local backup</span></button><button class="menu-tile" onclick="logoutCloud()">${appIcon('user')}<b>Logout</b><span>${esc(cloudUser?.email||'Cloud account')}</span></button></div><button class="secondary" style="width:100%;margin-top:12px" onclick="closeModal()">Close</button>`)}
 
 function openBackupMenu(){modal(`<h3>Backup & Data</h3><div class="form"><button class="primary" onclick="exportData()">Export JSON Backup</button><label class="secondary" style="display:block;text-align:center;padding:13px;border-radius:16px;cursor:pointer">Import Backup<input type="file" accept="application/json" hidden onchange="importData(event)"></label><div class="smallnote">Data local device पर भी save रहता है और login होने पर Supabase Cloud में automatically sync होता है.</div><button class="secondary" onclick="openMoreQuick()">Back</button></div>`)}
 function openHomeAddMenu(){modal(`<h3>Add Entry</h3><div class="quick" style="grid-template-columns:repeat(2,1fr)"><button class="qbtn" onclick="openDispatchPlatformModal()"><div class="qico"><span class="ui-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 6h11v10H3z"/><path d="M14 10h4l3 3v3h-7z"/><circle cx="7" cy="18" r="2"/><circle cx="18" cy="18" r="2"/></svg></span></div><span>Dispatch</span></button><button class="qbtn" onclick="openReturnCountModal()"><div class="qico"><span class="ui-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v6h6"/></svg></span></div><span>Return / RTO</span></button><button class="qbtn" onclick="openPaymentModal()"><div class="qico"><span class="ui-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 7h15a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h13"/><path d="M16 13h5"/><circle cx="16" cy="13" r="1"/></svg></span></div><span>Payment</span></button><button class="qbtn" onclick="openPurchaseModal()"><div class="qico">${appIcon('cart')}</div><span>Stock Purchase</span></button><button class="qbtn" onclick="openExpenseModal()"><div class="qico"><span class="ui-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2z"/><path d="M9 8h6M9 12h6M9 16h3"/></svg></span></div><span>Expense</span></button><button class="qbtn" onclick="switchPage('inventory');closeModal()"><div class="qico">${appIcon('inventory')}</div><span>Inventory</span></button></div>`)}
-function exportData(){const blob=new Blob([JSON.stringify({app:'BIXNOII',version:'5.0',exportedAt:new Date().toISOString(),data},null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='bixnoii-backup-'+todayISO()+'.json';a.click();URL.revokeObjectURL(a.href);toast('Backup exported')}
+function exportData(){const blob=new Blob([JSON.stringify({app:'BIXNOII',version:'5.1',exportedAt:new Date().toISOString(),data},null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='bixnoii-backup-'+todayISO()+'.json';a.click();URL.revokeObjectURL(a.href);toast('Backup exported')}
 function importData(e){const f=e.target.files?.[0];if(!f)return;const r=new FileReader();r.onload=()=>{try{const obj=JSON.parse(r.result);data=normalize(obj.data||obj);ensureDailyBackfill();save();closeModal();toast('Backup imported')}catch(err){toast('Invalid backup file')}};r.readAsText(f)}
 function toast(t){const el=$('toast');el.textContent=t;el.classList.remove('hidden');clearTimeout(window._tt);window._tt=setTimeout(()=>el.classList.add('hidden'),2300)}
 bootCloud();
