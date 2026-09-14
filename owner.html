@@ -7,30 +7,28 @@
 <title>BIXNOII Owner Panel</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
-:root{--bg:#f5f6fa;--card:#fff;--text:#171725;--muted:#7a7a8c;--line:#e7e7ef;--primary:#6b4eff;--primary2:#8e7cff;--green:#14b86e;--red:#ef4e5f;--amber:#f0a41d;--shadow:0 10px 28px rgba(35,28,77,.07)}
-*{box-sizing:border-box}html,body{margin:0;min-height:100%;font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:var(--bg);color:var(--text)}button,input{font:inherit}button{cursor:pointer}
-.hidden{display:none!important}
-.shell{min-height:100vh;display:grid;grid-template-columns:230px 1fr}
-.side{position:sticky;top:0;height:100vh;background:#fff;border-right:1px solid var(--line);padding:20px 15px;display:flex;flex-direction:column}
-.brand{display:flex;align-items:center;gap:11px;padding:4px 8px 22px;border-bottom:1px solid #efedf5}.logo{width:42px;height:42px;border-radius:14px;display:grid;place-items:center;color:#fff;font-weight:950;background:linear-gradient(145deg,var(--primary),#9b8cff);box-shadow:0 10px 22px rgba(107,78,255,.22)}.brand b{display:block;font-size:15px;letter-spacing:.5px}.brand span{display:block;color:var(--muted);font-size:9.5px;margin-top:2px}
-.nav{margin-top:18px;display:grid;gap:7px}.nav-item{border:0;background:#f2efff;color:var(--primary);font-weight:850;padding:12px 13px;border-radius:13px;text-align:left}.side-foot{margin-top:auto;padding:12px 8px 3px;border-top:1px solid #efedf5}.side-foot span{font-size:9px;color:var(--muted);display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.side-foot button{width:100%;margin-top:10px;border:0;background:#f7f6fb;color:#686579;border-radius:12px;padding:10px;font-size:10px;font-weight:800}
-.main{padding:27px 32px 55px;max-width:1380px;width:100%;margin:0 auto}.top{display:flex;align-items:center;justify-content:space-between;gap:18px;margin-bottom:24px}.top h1{margin:0;font-size:26px;letter-spacing:-.4px}.top p{margin:5px 0 0;color:var(--muted);font-size:11px}.top-actions{display:flex;align-items:center;gap:9px}.status{display:flex;align-items:center;gap:7px;border:1px solid #ded9ff;background:#f4f1ff;color:var(--primary);padding:8px 11px;border-radius:999px;font-size:9.5px;font-weight:900}.dot{width:7px;height:7px;background:var(--green);border-radius:50%}.btn{border:0;border-radius:13px;padding:10px 13px;font-weight:850;font-size:10px}.btn.primary{background:var(--primary);color:#fff}.btn.secondary{background:#fff;color:var(--primary);border:1px solid #e4dfff}
-.stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:13px;margin-bottom:20px}.stat{background:#fff;border:1px solid #ededf4;border-radius:18px;padding:17px;box-shadow:var(--shadow)}.stat span{display:block;color:var(--muted);font-size:9.5px;font-weight:750}.stat b{display:block;font-size:25px;margin-top:6px}.stat small{display:block;color:var(--muted);font-size:8.5px;margin-top:3px}
-.panel{background:#fff;border:1px solid #ededf4;border-radius:20px;padding:18px;box-shadow:var(--shadow)}.panel-head{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-bottom:15px}.panel-head h2{margin:0;font-size:17px}.panel-head span{color:var(--muted);font-size:9.5px}
-.search{width:min(430px,100%);border:1px solid var(--line);background:#fafafd;border-radius:13px;padding:11px 13px;outline:none}.search:focus{border-color:#cfc5ff;box-shadow:0 0 0 3px rgba(107,78,255,.08)}
-.table-wrap{overflow:auto}.table{min-width:900px}.tr{display:grid;grid-template-columns:95px 1.35fr 1.25fr 1.55fr 115px 135px 34px;gap:12px;align-items:center;padding:12px 8px;border-bottom:1px solid #f0eff5}.tr.head{padding-top:5px;color:var(--muted);font-size:9px;font-weight:850;text-transform:uppercase}.tr.customer{cursor:pointer;border-radius:12px}.tr.customer:hover{background:#faf9fe}.uid{font-size:12px;font-weight:950;color:var(--primary);letter-spacing:.6px}.business b,.email b{font-size:11px;display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.business span,.email span,.sync{font-size:9px;color:var(--muted);display:block;margin-top:3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.badge{display:inline-flex;width:max-content;align-items:center;gap:5px;padding:6px 8px;border-radius:999px;font-size:8.5px;font-weight:900}.badge.active{background:#e9fbf3;color:#0b9460}.badge.suspended{background:#ffedf0;color:#d83348}.arrow{font-size:20px;color:#aaa4bb;text-align:center}
+:root{--bg:#f5f6fa;--card:#fff;--text:#171725;--muted:#7a7a8c;--line:#e7e7ef;--primary:#6b4eff;--green:#14b86e;--red:#ef4e5f;--amber:#f0a41d;--blue:#3182f6;--shadow:0 10px 28px rgba(35,28,77,.07)}
+*{box-sizing:border-box}html,body{margin:0;min-height:100%;font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:var(--bg);color:var(--text)}button,input,select,textarea{font:inherit}button{cursor:pointer}.hidden{display:none!important}
+.shell{min-height:100vh;display:grid;grid-template-columns:238px 1fr}.side{position:sticky;top:0;height:100vh;background:#fff;border-right:1px solid var(--line);padding:20px 15px;display:flex;flex-direction:column}.brand{display:flex;align-items:center;gap:11px;padding:4px 8px 22px;border-bottom:1px solid #efedf5}.logo{width:42px;height:42px;border-radius:14px;display:grid;place-items:center;color:#fff;font-weight:950;background:linear-gradient(145deg,var(--primary),#9b8cff);box-shadow:0 10px 22px rgba(107,78,255,.22)}.brand b{display:block;font-size:15px;letter-spacing:.5px}.brand span{display:block;color:var(--muted);font-size:9.5px;margin-top:2px}.nav{margin-top:18px;display:grid;gap:7px}.nav-item{border:0;background:#f2efff;color:var(--primary);font-weight:850;padding:12px 13px;border-radius:13px;text-align:left}.side-foot{margin-top:auto;padding:12px 8px 3px;border-top:1px solid #efedf5}.side-foot span{font-size:9px;color:var(--muted);display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.side-foot b{font-size:10px;display:block;margin-top:3px}.side-foot button{width:100%;margin-top:10px;border:0;background:#f7f6fb;color:#686579;border-radius:12px;padding:10px;font-size:10px;font-weight:800}
+.main{padding:27px 32px 55px;max-width:1480px;width:100%;margin:0 auto}.top{display:flex;align-items:center;justify-content:space-between;gap:18px;margin-bottom:24px}.top h1{margin:0;font-size:26px;letter-spacing:-.4px}.top p{margin:5px 0 0;color:var(--muted);font-size:11px}.top-actions{display:flex;align-items:center;gap:9px;flex-wrap:wrap}.status{display:flex;align-items:center;gap:7px;border:1px solid #ded9ff;background:#f4f1ff;color:var(--primary);padding:8px 11px;border-radius:999px;font-size:9.5px;font-weight:900}.dot{width:7px;height:7px;background:var(--green);border-radius:50%}.btn{border:0;border-radius:13px;padding:10px 13px;font-weight:850;font-size:10px}.btn.primary{background:var(--primary);color:#fff}.btn.secondary{background:#fff;color:var(--primary);border:1px solid #e4dfff}.btn.danger{background:#ffedf0;color:#d83348}.btn.good{background:#e9fbf3;color:#0b9460}
+.stats{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:13px;margin-bottom:20px}.stat{background:#fff;border:1px solid #ededf4;border-radius:18px;padding:17px;box-shadow:var(--shadow)}.stat span{display:block;color:var(--muted);font-size:9.5px;font-weight:750}.stat b{display:block;font-size:25px;margin-top:6px}.stat small{display:block;color:var(--muted);font-size:8.5px;margin-top:3px}
+.panel{background:#fff;border:1px solid #ededf4;border-radius:20px;padding:18px;box-shadow:var(--shadow)}.panel-head{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;margin-bottom:15px}.panel-head h2{margin:0;font-size:17px}.panel-head span{color:var(--muted);font-size:9.5px}.tools{display:grid;grid-template-columns:minmax(220px,1fr) repeat(4,150px);gap:9px;margin-bottom:14px}.search,.select{width:100%;border:1px solid var(--line);background:#fafafd;border-radius:13px;padding:11px 13px;outline:none}.search:focus,.select:focus{border-color:#cfc5ff;box-shadow:0 0 0 3px rgba(107,78,255,.08)}
+.table-wrap{overflow:auto}.table{min-width:1120px}.tr{display:grid;grid-template-columns:86px 1.4fr 1.2fr 1.45fr 110px 110px 115px 125px 30px;gap:11px;align-items:center;padding:12px 8px;border-bottom:1px solid #f0eff5}.tr.head{padding-top:5px;color:var(--muted);font-size:9px;font-weight:850;text-transform:uppercase}.tr.customer{cursor:pointer;border-radius:12px}.tr.customer:hover{background:#faf9fe}.uid{font-size:12px;font-weight:950;color:var(--primary);letter-spacing:.6px}.cell b{font-size:11px;display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.cell span{font-size:9px;color:var(--muted);display:block;margin-top:3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.badge{display:inline-flex;width:max-content;align-items:center;gap:5px;padding:6px 8px;border-radius:999px;font-size:8.5px;font-weight:900}.badge.active,.badge.resolved{background:#e9fbf3;color:#0b9460}.badge.suspended,.badge.urgent{background:#ffedf0;color:#d83348}.badge.open,.badge.high,.badge.trial{background:#fff4df;color:#b87500}.badge.waiting,.badge.expired{background:#eef4ff;color:#2b66c5}.badge.none,.badge.normal,.badge.low,.badge.cancelled{background:#f3f3f7;color:#777587}.arrow{font-size:20px;color:#aaa4bb;text-align:center}.health{font-size:9px;font-weight:850}.health.good{color:var(--green)}.health.warn{color:var(--amber)}.health.bad{color:var(--red)}
 .empty{text-align:center;padding:48px;color:var(--muted);font-size:11px}
-.overlay{position:fixed;inset:0;background:rgba(20,16,39,.45);z-index:50;display:flex;align-items:center;justify-content:center;padding:22px}.modal{background:#fff;width:min(620px,100%);max-height:88vh;overflow:auto;border-radius:23px;padding:21px;box-shadow:0 30px 80px rgba(23,17,52,.24)}.modal-head{display:flex;justify-content:space-between;align-items:flex-start;gap:15px;margin-bottom:18px}.modal-head h2{margin:0;font-size:19px}.modal-head p{margin:5px 0 0;color:var(--muted);font-size:10px}.close{border:0;background:#f4f2fa;width:36px;height:36px;border-radius:11px;font-size:18px;color:#706b7f}.uid-hero{background:linear-gradient(135deg,#2c214f,#6b4eff 70%,#9b8cff);color:#fff;border-radius:18px;padding:20px;margin-bottom:14px}.uid-hero span{font-size:9.5px;opacity:.8}.uid-hero b{display:block;font-size:32px;letter-spacing:2px;margin-top:3px}.details{border:1px solid #eceaf3;border-radius:16px;overflow:hidden}.line{display:flex;justify-content:space-between;gap:18px;padding:12px 13px;border-bottom:1px solid #f0eef5}.line:last-child{border-bottom:0}.line span{font-size:9.5px;color:var(--muted)}.line b{font-size:10.5px;text-align:right;max-width:65%;overflow-wrap:anywhere}.usage{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin-top:14px}.usage div{background:#f8f7fc;border:1px solid #eceaf5;border-radius:14px;padding:12px}.usage span{display:block;color:var(--muted);font-size:8.5px}.usage b{display:block;font-size:18px;margin-top:4px}
-.login{position:fixed;inset:0;z-index:100;background:linear-gradient(155deg,#f6f5ff,#fff 55%,#f1efff);display:flex;align-items:center;justify-content:center;padding:22px}.login-card{width:min(420px,100%);background:#fff;border:1px solid #e9e5ff;border-radius:26px;padding:25px;box-shadow:0 25px 70px rgba(47,34,106,.13)}.login-logo{width:54px;height:54px;border-radius:17px;background:linear-gradient(145deg,var(--primary),#9b8cff);display:grid;place-items:center;color:#fff;font-weight:950;font-size:23px;margin-bottom:17px}.login-card h1{margin:0;font-size:23px}.login-card p{color:var(--muted);font-size:10.5px;line-height:1.55;margin:6px 0 17px}.field{margin-bottom:11px}.field label{display:block;font-size:10px;color:var(--muted);font-weight:750;margin:0 0 5px}.field input{width:100%;border:1px solid var(--line);background:#fafafd;border-radius:13px;padding:12px 13px;outline:none}.login-card .btn{width:100%;padding:13px;margin-top:3px}.msg{font-size:9.5px;line-height:1.45;margin-top:10px;padding:10px;border-radius:11px;background:#ffedf0;color:#bd3044}
-@media(max-width:850px){.shell{display:block}.side{position:static;height:auto;padding:13px 15px;display:flex;flex-direction:row;align-items:center;gap:10px}.brand{border:0;padding:0;flex:1}.nav{display:none}.side-foot{border:0;margin:0;padding:0}.side-foot span{display:none}.side-foot button{margin:0;width:auto}.main{padding:18px 14px 45px}.top{align-items:flex-start}.top h1{font-size:21px}.stats{grid-template-columns:repeat(2,1fr);gap:9px}.stat{padding:14px}.panel{padding:14px}.panel-head{align-items:flex-start;flex-direction:column}.search{width:100%}.usage{grid-template-columns:repeat(2,1fr)}}
-.forgot{margin-top:11px;text-align:center}.forgot button{border:0;background:transparent;color:var(--primary);font-size:10.5px;font-weight:850;padding:6px 8px}.success{font-size:9.5px;line-height:1.45;margin-top:10px;padding:10px;border-radius:11px;background:#e9fbf3;color:#0b9460}.reset-actions{display:grid;gap:8px;margin-top:10px}</style>
+.overlay{position:fixed;inset:0;background:rgba(20,16,39,.45);z-index:50;display:flex;align-items:center;justify-content:center;padding:22px}.modal{background:#fff;width:min(790px,100%);max-height:90vh;overflow:auto;border-radius:23px;padding:21px;box-shadow:0 30px 80px rgba(23,17,52,.24)}.modal-head{display:flex;justify-content:space-between;align-items:flex-start;gap:15px;margin-bottom:18px}.modal-head h2{margin:0;font-size:19px}.modal-head p{margin:5px 0 0;color:var(--muted);font-size:10px}.close{border:0;background:#f4f2fa;width:36px;height:36px;border-radius:11px;font-size:18px;color:#706b7f}.uid-hero{background:linear-gradient(135deg,#2c214f,#6b4eff 70%,#9b8cff);color:#fff;border-radius:18px;padding:20px;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;gap:12px}.uid-hero span{font-size:9.5px;opacity:.8}.uid-hero b{display:block;font-size:32px;letter-spacing:2px;margin-top:3px}.hero-badges{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}.hero-badges .badge{background:rgba(255,255,255,.17);color:#fff}
+.details{border:1px solid #eceaf3;border-radius:16px;overflow:hidden}.line{display:flex;justify-content:space-between;gap:18px;padding:12px 13px;border-bottom:1px solid #f0eef5}.line:last-child{border-bottom:0}.line span{font-size:9.5px;color:var(--muted)}.line b{font-size:10.5px;text-align:right;max-width:65%;overflow-wrap:anywhere}.usage{display:grid;grid-template-columns:repeat(4,1fr);gap:9px;margin-top:14px}.usage div{background:#f8f7fc;border:1px solid #eceaf5;border-radius:14px;padding:12px}.usage span{display:block;color:var(--muted);font-size:8.5px}.usage b{display:block;font-size:18px;margin-top:4px}
+.section{margin-top:16px}.section h3{font-size:13px;margin:0 0 9px}.manage-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}.field label{display:block;font-size:9.5px;color:var(--muted);font-weight:750;margin:0 0 5px}.field input,.field select,.field textarea{width:100%;border:1px solid var(--line);background:#fafafd;border-radius:12px;padding:11px 12px;outline:none}.field textarea{min-height:88px;resize:vertical}.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}.actions .btn{flex:1;min-width:140px}.audit{border:1px solid #eceaf3;border-radius:15px;overflow:hidden}.audit-row{padding:11px 12px;border-bottom:1px solid #f0eef5}.audit-row:last-child{border-bottom:0}.audit-row b{font-size:10.5px}.audit-row span{display:block;color:var(--muted);font-size:8.8px;margin-top:3px;line-height:1.4}
+.login{position:fixed;inset:0;z-index:100;background:linear-gradient(155deg,#f6f5ff,#fff 55%,#f1efff);display:flex;align-items:center;justify-content:center;padding:22px}.login-card{width:min(420px,100%);background:#fff;border:1px solid #e9e5ff;border-radius:26px;padding:25px;box-shadow:0 25px 70px rgba(47,34,106,.13)}.login-logo{width:54px;height:54px;border-radius:17px;background:linear-gradient(145deg,var(--primary),#9b8cff);display:grid;place-items:center;color:#fff;font-weight:950;font-size:23px;margin-bottom:17px}.login-card h1{margin:0;font-size:23px}.login-card p{color:var(--muted);font-size:10.5px;line-height:1.55;margin:6px 0 17px}.login-card .btn{width:100%;padding:13px;margin-top:3px}.msg{font-size:9.5px;line-height:1.45;margin-top:10px;padding:10px;border-radius:11px;background:#ffedf0;color:#bd3044}.success{font-size:9.5px;line-height:1.45;margin-top:10px;padding:10px;border-radius:11px;background:#e9fbf3;color:#0b9460}.forgot{margin-top:11px;text-align:center}.forgot button{border:0;background:transparent;color:var(--primary);font-size:10.5px;font-weight:850;padding:6px 8px}
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#1e1d28;color:#fff;padding:11px 15px;border-radius:12px;font-size:10px;z-index:120;box-shadow:var(--shadow)}
+@media(max-width:1000px){.tools{grid-template-columns:1fr 1fr 1fr}.stats{grid-template-columns:repeat(3,1fr)}}@media(max-width:850px){.shell{display:block}.side{position:static;height:auto;padding:13px 15px;display:flex;flex-direction:row;align-items:center;gap:10px}.brand{border:0;padding:0;flex:1}.nav{display:none}.side-foot{border:0;margin:0;padding:0}.side-foot span,.side-foot b{display:none}.side-foot button{margin:0;width:auto}.main{padding:18px 14px 45px}.top{align-items:flex-start}.top h1{font-size:21px}.stats{grid-template-columns:repeat(2,1fr);gap:9px}.stat{padding:14px}.panel{padding:14px}.panel-head{flex-direction:column}.tools{grid-template-columns:1fr 1fr}.usage{grid-template-columns:repeat(2,1fr)}.manage-grid{grid-template-columns:1fr}.modal{padding:16px}.uid-hero{align-items:flex-start;flex-direction:column}.hero-badges{justify-content:flex-start}}
+</style>
 </head>
 <body>
 <div id="loginGate" class="login">
   <div class="login-card">
     <div class="login-logo">B</div>
     <h1>BIXNOII Owner Panel</h1>
-    <p>Only authorized BIXNOII owner/support accounts can access customer account information.</p>
+    <p>Authorized owner/support accounts only.</p>
     <div class="field"><label>Email</label><input id="email" type="email" autocomplete="email" placeholder="Owner email"></div>
     <div class="field"><label>Password</label><input id="password" type="password" autocomplete="current-password" placeholder="Password"></div>
     <button class="btn primary" onclick="login()">Login to Owner Panel</button>
@@ -43,16 +41,16 @@
   <div class="login-card">
     <div class="login-logo">B</div>
     <h1 id="resetTitle">Reset Password</h1>
-    <p id="resetText">Enter your owner email. We’ll send a secure password reset link.</p>
+    <p id="resetText">Enter your owner email. We’ll send a secure reset link.</p>
     <div id="requestResetForm">
       <div class="field"><label>Email</label><input id="resetEmail" type="email" autocomplete="email" placeholder="Owner email"></div>
       <button class="btn primary" onclick="sendResetLink()">Send Reset Link</button>
       <div class="forgot"><button onclick="backToLogin()">Back to Login</button></div>
     </div>
     <div id="newPasswordForm" class="hidden">
-      <div class="field"><label>New Password</label><input id="newPassword" type="password" autocomplete="new-password" placeholder="Minimum 6 characters"></div>
-      <div class="field"><label>Confirm Password</label><input id="confirmPassword" type="password" autocomplete="new-password" placeholder="Re-enter password"></div>
-      <div class="reset-actions"><button class="btn primary" onclick="saveNewPassword()">Save New Password</button></div>
+      <div class="field"><label>New Password</label><input id="newPassword" type="password" autocomplete="new-password"></div>
+      <div class="field"><label>Confirm Password</label><input id="confirmPassword" type="password" autocomplete="new-password"></div>
+      <button class="btn primary" onclick="saveNewPassword()">Save New Password</button>
     </div>
     <div id="resetMsg"></div>
   </div>
@@ -61,200 +59,159 @@
 <div class="shell">
   <aside class="side">
     <div class="brand"><div class="logo">B</div><div><b>BIXNOII</b><span>Owner Panel</span></div></div>
-    <div class="nav"><button class="nav-item">Customers</button></div>
-    <div class="side-foot"><span id="ownerEmail">—</span><button onclick="logout()">Logout</button></div>
+    <div class="nav"><button class="nav-item">Customer Management</button></div>
+    <div class="side-foot"><span id="ownerEmail">—</span><b id="ownerRole">—</b><button onclick="logout()">Logout</button></div>
   </aside>
-
   <main class="main">
     <div class="top">
-      <div><h1>Customer Accounts</h1><p>Search customers by UID, email, business or owner name.</p></div>
-      <div class="top-actions"><span class="status"><i class="dot"></i> Secure Admin</span><button class="btn secondary" onclick="loadCustomers()">Refresh</button></div>
+      <div><h1>Customer Management</h1><p>Accounts, support, plans, sync health and activity.</p></div>
+      <div class="top-actions"><span class="status"><i class="dot"></i> Secure Admin</span><button class="btn secondary" onclick="exportCSV()">Export CSV</button><button class="btn secondary" onclick="loadCustomers()">Refresh</button></div>
     </div>
 
     <section class="stats">
-      <div class="stat"><span>Total Customers</span><b id="totalCount">0</b><small>registered accounts</small></div>
-      <div class="stat"><span>Active Accounts</span><b id="activeCount">0</b><small>currently active</small></div>
-      <div class="stat"><span>Synced Accounts</span><b id="syncedCount">0</b><small>cloud data available</small></div>
+      <div class="stat"><span>Total Customers</span><b id="totalCount">0</b><small>registered</small></div>
+      <div class="stat"><span>Active</span><b id="activeCount">0</b><small>usable accounts</small></div>
+      <div class="stat"><span>Support Open</span><b id="supportCount">0</b><small>needs attention</small></div>
+      <div class="stat"><span>Synced</span><b id="syncedCount">0</b><small>cloud data found</small></div>
       <div class="stat"><span>Recent Login</span><b id="recentCount">0</b><small>last 7 days</small></div>
     </section>
 
     <section class="panel">
-      <div class="panel-head">
-        <div><h2>All Customers</h2><span id="resultText">0 customers</span></div>
+      <div class="panel-head"><div><h2>All Customers</h2><span id="resultText">0 customers</span></div></div>
+      <div class="tools">
         <input id="search" class="search" placeholder="Search UID / email / business / owner..." oninput="renderCustomers()">
+        <select id="statusFilter" class="select" onchange="renderCustomers()"><option value="">All account status</option><option value="active">Active</option><option value="suspended">Suspended</option></select>
+        <select id="supportFilter" class="select" onchange="renderCustomers()"><option value="">All support status</option><option value="open">Open</option><option value="waiting">Waiting</option><option value="resolved">Resolved</option><option value="none">None</option></select>
+        <select id="planFilter" class="select" onchange="renderCustomers()"><option value="">All plans</option><option>Free</option><option>Trial</option><option>Basic</option><option>Pro</option><option>Enterprise</option></select>
+        <select id="sortBy" class="select" onchange="renderCustomers()"><option value="newest">Newest</option><option value="uid">UID</option><option value="recent">Recent login</option><option value="sync">Last sync</option></select>
       </div>
-      <div class="table-wrap">
-        <div class="table">
-          <div class="tr head"><div>UID</div><div>Business</div><div>Owner</div><div>Email</div><div>Status</div><div>Last Sync</div><div></div></div>
-          <div id="rows"></div>
-        </div>
-      </div>
+      <div class="table-wrap"><div class="table">
+        <div class="tr head"><div>UID</div><div>Business</div><div>Owner</div><div>Email</div><div>Account</div><div>Plan</div><div>Support</div><div>Sync Health</div><div></div></div>
+        <div id="rows"></div>
+      </div></div>
     </section>
   </main>
 </div>
-<div id="modalRoot"></div>
+<div id="modalRoot"></div><div id="toast" class="toast hidden"></div>
 
 <script>
 const SUPABASE_URL='https://tducbuscraurojyewliy.supabase.co';
 const SUPABASE_KEY='sb_publishable_BgTE00AlTNV39wm4JBto0g_q2doc1wk';
+const APP_URL='https://kpvishnoe29-cell.github.io/-bixnoii-demo/';
 const sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY,{auth:{persistSession:true,autoRefreshToken:true}});
 const $=id=>document.getElementById(id);
 const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));
-let customers=[],currentUser=null;
+let customers=[],currentUser=null,currentRole=null,currentCustomer=null;
 
+function toast(t){const el=$('toast');el.textContent=t;el.classList.remove('hidden');clearTimeout(window.__tt);window.__tt=setTimeout(()=>el.classList.add('hidden'),2200)}
 function fmt(v){if(!v)return 'Never';const d=new Date(v);return d.toLocaleString('en-IN',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'})}
 function daysAgo(v){if(!v)return Infinity;return (Date.now()-new Date(v).getTime())/86400000}
+function badge(v){return '<span class="badge '+esc(v||'none')+'">'+esc(v||'none')+'</span>'}
+function health(x){if(!x.last_sync_at)return '<span class="health bad">No sync</span>';const d=daysAgo(x.last_sync_at);if(d<=1)return '<span class="health good">Healthy</span>';if(d<=7)return '<span class="health warn">Stale '+Math.floor(d)+'d</span>';return '<span class="health bad">Old '+Math.floor(d)+'d</span>'}
 function msg(t){$('loginMsg').innerHTML=t?'<div class="msg">'+esc(t)+'</div>':''}
+function resetMsg(t,type='error'){$('resetMsg').innerHTML=t?'<div class="'+(type==='success'?'success':'msg')+'">'+esc(t)+'</div>':''}
 
-
-function resetMsg(t,type='error'){const el=$('resetMsg');if(!el)return;el.innerHTML=t?'<div class="'+(type==='success'?'success':'msg')+'">'+esc(t)+'</div>':''}
-function showForgotPassword(){
-  $('loginGate').classList.add('hidden');
-  $('resetGate').classList.remove('hidden');
-  $('requestResetForm').classList.remove('hidden');
-  $('newPasswordForm').classList.add('hidden');
-  $('resetTitle').textContent='Forgot Password';
-  $('resetText').textContent='Enter your owner email. We’ll send a secure password reset link.';
-  $('resetEmail').value=$('email')?.value||'';
-  resetMsg('');
-}
-function backToLogin(){
-  $('resetGate').classList.add('hidden');
-  $('loginGate').classList.remove('hidden');
-  resetMsg('');
-}
-async function sendResetLink(){
-  const email=$('resetEmail').value.trim();
-  if(!email||!email.includes('@')){resetMsg('Enter a valid email address.');return}
-  resetMsg('');
-  const redirectTo=window.location.origin+window.location.pathname;
-  const {error}=await sb.auth.resetPasswordForEmail(email,{redirectTo});
-  if(error){
-    const raw=String(error.message||'').toLowerCase();
-    if(raw.includes('rate limit')||raw.includes('too many')){
-      resetMsg('Too many reset requests. Please wait a while, then try again once. Avoid pressing Send Reset Link repeatedly.');
-    }else{
-      resetMsg(error.message||'Unable to send reset email. Please try again later.');
-    }
-    return;
-  }
-  resetMsg('Password reset email sent. Check your inbox and spam folder, then open the latest reset link.','success');
-}
-function showNewPasswordForm(){
-  $('loginGate').classList.add('hidden');
-  $('resetGate').classList.remove('hidden');
-  $('requestResetForm').classList.add('hidden');
-  $('newPasswordForm').classList.remove('hidden');
-  $('resetTitle').textContent='Create New Password';
-  $('resetText').textContent='Choose a new password for your BIXNOII Owner account.';
-  resetMsg('');
-}
-async function saveNewPassword(){
-  const p=$('newPassword').value,c=$('confirmPassword').value;
-  if(!p||p.length<6){resetMsg('Password must be at least 6 characters.');return}
-  if(p!==c){resetMsg('Passwords do not match.');return}
-  const {error}=await sb.auth.updateUser({password:p});
-  if(error){resetMsg(error.message);return}
-  resetMsg('Password changed successfully. You can now login with the new password.','success');
-  await sb.auth.signOut();
-  setTimeout(()=>{history.replaceState(null,'',window.location.pathname);backToLogin()},1200);
-}
-
-async function login(){
-  msg('');
-  const email=$('email').value.trim(),password=$('password').value;
-  if(!email||!password){msg('Enter email and password.');return}
-  const {data,error}=await sb.auth.signInWithPassword({email,password});
-  if(error){msg(error.message);return}
-  currentUser=data.user;
-  await start();
-}
+function showForgotPassword(){$('loginGate').classList.add('hidden');$('resetGate').classList.remove('hidden');$('requestResetForm').classList.remove('hidden');$('newPasswordForm').classList.add('hidden');$('resetEmail').value=$('email')?.value||'';resetMsg('')}
+function backToLogin(){$('resetGate').classList.add('hidden');$('loginGate').classList.remove('hidden');resetMsg('')}
+async function sendResetLink(){const email=$('resetEmail').value.trim();if(!email||!email.includes('@'))return resetMsg('Enter a valid email address.');const {error}=await sb.auth.resetPasswordForEmail(email,{redirectTo:location.origin+location.pathname});if(error){const r=String(error.message||'').toLowerCase();return resetMsg(r.includes('rate limit')?'Too many reset requests. Please wait and try again once.':error.message)}resetMsg('Password reset email sent. Check inbox and spam.','success')}
+function showNewPasswordForm(){$('loginGate').classList.add('hidden');$('resetGate').classList.remove('hidden');$('requestResetForm').classList.add('hidden');$('newPasswordForm').classList.remove('hidden');$('resetTitle').textContent='Create New Password';$('resetText').textContent='Choose a new password for your owner account.'}
+async function saveNewPassword(){const p=$('newPassword').value,c=$('confirmPassword').value;if(p.length<6)return resetMsg('Password must be at least 6 characters.');if(p!==c)return resetMsg('Passwords do not match.');const {error}=await sb.auth.updateUser({password:p});if(error)return resetMsg(error.message);resetMsg('Password changed successfully.','success');await sb.auth.signOut();setTimeout(()=>location.reload(),900)}
+async function login(){msg('');const email=$('email').value.trim(),password=$('password').value;if(!email||!password)return msg('Enter email and password.');const {data,error}=await sb.auth.signInWithPassword({email,password});if(error)return msg(error.message);currentUser=data.user;await start()}
 async function logout(){await sb.auth.signOut();location.reload()}
 
 async function start(){
   if(!currentUser)return;
-  const {data:admin,error}=await sb.from('admin_users').select('role').eq('user_id',currentUser.id).maybeSingle();
-  if(error||!admin){
-    await sb.auth.signOut();
-    currentUser=null;
-    $('loginGate').classList.remove('hidden');
-    msg('This account does not have Owner Panel access.');
-    return;
-  }
-  $('ownerEmail').textContent=currentUser.email||'Owner';
-  $('loginGate').classList.add('hidden');
-  await loadCustomers();
+  const {data:role,error}=await sb.rpc('current_admin_role');
+  if(error||!role){await sb.auth.signOut();currentUser=null;$('loginGate').classList.remove('hidden');msg('This account does not have Owner Panel access.');return}
+  currentRole=role;$('ownerEmail').textContent=currentUser.email||'Owner';$('ownerRole').textContent=String(role).toUpperCase();$('loginGate').classList.add('hidden');await loadCustomers()
 }
 async function loadCustomers(){
   const {data,error}=await sb.rpc('owner_customer_list');
   if(error){alert('Unable to load customers: '+error.message);return}
-  customers=data||[];
-  updateStats();
-  renderCustomers();
+  customers=data||[];updateStats();renderCustomers()
 }
 function updateStats(){
   $('totalCount').textContent=customers.length;
   $('activeCount').textContent=customers.filter(x=>x.account_status==='active').length;
+  $('supportCount').textContent=customers.filter(x=>['open','waiting'].includes(x.support_status)).length;
   $('syncedCount').textContent=customers.filter(x=>x.last_sync_at).length;
   $('recentCount').textContent=customers.filter(x=>daysAgo(x.last_sign_in_at)<=7).length;
 }
+function filtered(){
+  const q=$('search').value.trim().toLowerCase(),st=$('statusFilter').value,su=$('supportFilter').value,pl=$('planFilter').value,sort=$('sortBy').value;
+  let list=customers.filter(x=>(!q||String(x.uid).includes(q)||String(x.email||'').toLowerCase().includes(q)||String(x.business_name||'').toLowerCase().includes(q)||String(x.owner_name||'').toLowerCase().includes(q))&&(!st||x.account_status===st)&&(!su||x.support_status===su)&&(!pl||x.plan_name===pl));
+  list=list.slice().sort((a,b)=>sort==='uid'?Number(a.uid)-Number(b.uid):sort==='recent'?new Date(b.last_sign_in_at||0)-new Date(a.last_sign_in_at||0):sort==='sync'?new Date(b.last_sync_at||0)-new Date(a.last_sync_at||0):new Date(b.created_at||0)-new Date(a.created_at||0));
+  return list;
+}
 function renderCustomers(){
-  const q=$('search').value.trim().toLowerCase();
-  const list=customers.filter(x=>!q||String(x.uid).includes(q)||String(x.email||'').toLowerCase().includes(q)||String(x.business_name||'').toLowerCase().includes(q)||String(x.owner_name||'').toLowerCase().includes(q));
-  $('resultText').textContent=list.length+' customer'+(list.length===1?'':'s');
+  const list=filtered();$('resultText').textContent=list.length+' customer'+(list.length===1?'':'s');
   $('rows').innerHTML=list.length?list.map(x=>`<div class="tr customer" onclick="openCustomer(${Number(x.uid)})">
     <div class="uid">${esc(x.uid)}</div>
-    <div class="business"><b>${esc(x.business_name||'BIXNOII')}</b><span>Created ${esc(fmt(x.created_at))}</span></div>
-    <div class="business"><b>${esc(x.owner_name||'Not added')}</b><span>${esc(x.phone||'No mobile')}</span></div>
-    <div class="email"><b>${esc(x.email||'—')}</b><span>Login: ${esc(fmt(x.last_sign_in_at))}</span></div>
-    <div><span class="badge ${x.account_status==='active'?'active':'suspended'}">${esc(x.account_status||'active')}</span></div>
-    <div class="sync">${esc(fmt(x.last_sync_at))}</div>
-    <div class="arrow">›</div>
-  </div>`).join(''):'<div class="empty">No matching customer account found.</div>';
+    <div class="cell"><b>${esc(x.business_name||'BIXNOII')}</b><span>Created ${esc(fmt(x.created_at))}</span></div>
+    <div class="cell"><b>${esc(x.owner_name||'Not added')}</b><span>${esc(x.phone||'No mobile')}</span></div>
+    <div class="cell"><b>${esc(x.email||'—')}</b><span>Login ${esc(fmt(x.last_sign_in_at))}</span></div>
+    <div>${badge(x.account_status)}</div><div>${badge(x.plan_name||'Free')}</div><div>${badge(x.support_status)}</div><div>${health(x)}</div><div class="arrow">›</div>
+  </div>`).join(''):'<div class="empty">No matching customers.</div>'
 }
 async function openCustomer(uid){
-  const {data,error}=await sb.rpc('owner_customer_detail',{p_uid:Number(uid)});
+  const [{data,error},{data:audit,error:auditErr}]=await Promise.all([sb.rpc('owner_customer_detail',{p_uid:Number(uid)}),sb.rpc('owner_customer_audit',{p_uid:Number(uid)})]);
   if(error){alert('Unable to open customer: '+error.message);return}
-  const x=data||{},st=x.stats||{};
+  currentCustomer=data;renderCustomerModal(data,auditErr?[]:(audit||[]))
+}
+function renderCustomerModal(x,audit){
+  const st=x.stats||{},ownerOnly=currentRole==='owner';
   $('modalRoot').innerHTML=`<div class="overlay" onclick="if(event.target===this)closeModal()"><div class="modal">
     <div class="modal-head"><div><h2>${esc(x.business_name||'Customer')}</h2><p>${esc(x.owner_name||'Owner name not added')}</p></div><button class="close" onclick="closeModal()">×</button></div>
-    <div class="uid-hero"><span>CUSTOMER UID</span><b>${esc(x.uid)}</b></div>
+    <div class="uid-hero"><div><span>CUSTOMER UID</span><b>${esc(x.uid)}</b></div><div class="hero-badges">${badge(x.account_status)}${badge(x.plan_name||'Free')}${badge(x.support_status||'none')}</div></div>
     <div class="details">
-      ${line('Email',x.email||'Not added')}
-      ${line('Mobile',x.phone||'Not added')}
-      ${line('Account Status',x.account_status||'active')}
-      ${line('Account Created',fmt(x.created_at))}
-      ${line('Last Login',fmt(x.last_sign_in_at))}
-      ${line('Last Cloud Sync',fmt(x.last_sync_at))}
+      ${line('Email',x.email||'Not added')}${line('Mobile',x.phone||'Not added')}${line('Account Created',fmt(x.created_at))}${line('Last Login',fmt(x.last_sign_in_at))}${line('Last Cloud Sync',fmt(x.last_sync_at))}${line('Support Access',x.support_access_until&&new Date(x.support_access_until)>new Date()?'Granted until '+fmt(x.support_access_until):'Not granted')}${line('Data Health',x.last_sync_at?(daysAgo(x.last_sync_at)<=1?'Healthy':daysAgo(x.last_sync_at)<=7?'Stale':'Needs attention'):'No cloud sync')}
     </div>
-    <div class="usage">
-      ${usage('Products',st.products)}
-      ${usage('Dispatches',st.dispatches)}
-      ${usage('Returns / RTO',st.returns)}
-      ${usage('Payments',st.payments)}
-      ${usage('Expenses',st.expenses)}
-      ${usage('Documents',st.documents)}
+    <div class="usage">${usage('Products',st.products)}${usage('Dispatches',st.dispatches)}${usage('Returns / RTO',st.returns)}${usage('Payments',st.payments)}${usage('Expenses',st.expenses)}${usage('Purchases',st.purchases)}${usage('Documents',st.documents)}</div>
+
+    <div class="section"><h3>Account & Subscription</h3><div class="manage-grid">
+      <div class="field"><label>Account Status</label><select id="mAccount" ${ownerOnly?'':'disabled'}><option value="active" ${x.account_status==='active'?'selected':''}>Active</option><option value="suspended" ${x.account_status==='suspended'?'selected':''}>Suspended</option></select></div>
+      <div class="field"><label>Plan</label><select id="mPlan" ${ownerOnly?'':'disabled'}>${['Free','Trial','Basic','Pro','Enterprise'].map(v=>`<option ${x.plan_name===v?'selected':''}>${v}</option>`).join('')}</select></div>
+      <div class="field"><label>Subscription</label><select id="mSub" ${ownerOnly?'':'disabled'}>${['active','trial','expired','cancelled'].map(v=>`<option value="${v}" ${x.subscription_status===v?'selected':''}>${v}</option>`).join('')}</select></div>
+      <div class="field"><label>Priority</label><select id="mPriority">${['low','normal','high','urgent'].map(v=>`<option value="${v}" ${x.priority===v?'selected':''}>${v}</option>`).join('')}</select></div>
+    </div></div>
+
+    <div class="section"><h3>Support Case</h3><div class="manage-grid"><div class="field"><label>Status</label><select id="mSupport">${['none','open','waiting','resolved'].map(v=>`<option value="${v}" ${x.support_status===v?'selected':''}>${v}</option>`).join('')}</select></div><div class="field"><label>Support Note</label><textarea id="mNote" placeholder="Problem, follow-up, solution...">${esc(x.support_note||'')}</textarea></div></div></div>
+
+    <div class="actions">
+      <button class="btn primary" onclick="saveCustomerAdmin()">Save Changes</button>
+      <button class="btn secondary" onclick="copyText('${esc(x.uid)}','UID copied')">Copy UID</button>
+      <button class="btn secondary" onclick="copyText('${esc(x.email||'')}','Email copied')">Copy Email</button>
+      <button class="btn secondary" onclick="sendCustomerReset()">Send Password Reset</button>
     </div>
-    <div style="display:flex;gap:9px;margin-top:15px"><button class="btn secondary" style="flex:1" onclick="navigator.clipboard?.writeText('${esc(x.uid)}')">Copy UID</button><button class="btn primary" style="flex:1" onclick="closeModal()">Done</button></div>
-  </div></div>`;
+
+    <div class="section"><h3>Admin Audit History</h3><div class="audit">${audit.length?audit.map(a=>`<div class="audit-row"><b>${esc(a.action)}</b><span>${esc(fmt(a.created_at))} • ${esc(a.admin_email||'admin')}</span></div>`).join(''):'<div class="audit-row"><span>No admin actions yet.</span></div>'}</div></div>
+  </div></div>`
+}
+async function saveCustomerAdmin(){
+  if(!currentCustomer)return;
+  const payload={p_uid:Number(currentCustomer.uid),p_account_status:currentRole==='owner'?$('mAccount').value:null,p_plan_name:currentRole==='owner'?$('mPlan').value:null,p_subscription_status:currentRole==='owner'?$('mSub').value:null,p_support_note:$('mNote').value,p_support_status:$('mSupport').value,p_priority:$('mPriority').value};
+  const {data,error}=await sb.rpc('owner_update_customer',payload);if(error){alert(error.message);return}
+  toast('Customer updated');await loadCustomers();await openCustomer(currentCustomer.uid)
+}
+async function sendCustomerReset(){
+  if(!currentCustomer?.email)return;
+  const {error}=await sb.auth.resetPasswordForEmail(currentCustomer.email,{redirectTo:APP_URL});
+  if(error){alert(error.message);return}
+  toast('Password reset email requested')
+}
+function copyText(v,m){navigator.clipboard?.writeText(v);toast(m)}
+function exportCSV(){
+  const list=filtered(),cols=['uid','business_name','owner_name','email','phone','account_status','plan_name','subscription_status','support_status','priority','created_at','last_sign_in_at','last_sync_at'];
+  const q=v=>'"'+String(v??'').replace(/"/g,'""')+'"';
+  const csv=[cols.join(','),...list.map(x=>cols.map(k=>q(x[k])).join(','))].join('\n');
+  const b=new Blob([csv],{type:'text/csv;charset=utf-8'}),a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='bixnoii-customers.csv';a.click();URL.revokeObjectURL(a.href)
 }
 function line(k,v){return '<div class="line"><span>'+esc(k)+'</span><b>'+esc(v)+'</b></div>'}
 function usage(k,v){return '<div><span>'+esc(k)+'</span><b>'+Number(v||0)+'</b></div>'}
-function closeModal(){$('modalRoot').innerHTML=''}
+function closeModal(){$('modalRoot').innerHTML='';currentCustomer=null}
 
-sb.auth.onAuthStateChange(async(event,session)=>{
-  if(event==='PASSWORD_RECOVERY'){
-    currentUser=session?.user||null;
-    showNewPasswordForm();
-  }
-});
-
-(async()=>{
-  const {data}=await sb.auth.getSession();
-  const recoveryInUrl=window.location.hash.includes('type=recovery')||window.location.search.includes('type=recovery');
-  if(recoveryInUrl&&data?.session?.user){currentUser=data.session.user;showNewPasswordForm();return}
-  if(data?.session?.user){currentUser=data.session.user;await start()}
-})();
+sb.auth.onAuthStateChange(async(event,session)=>{if(event==='PASSWORD_RECOVERY'){currentUser=session?.user||null;showNewPasswordForm()}});
+(async()=>{const {data}=await sb.auth.getSession();const recovery=location.hash.includes('type=recovery')||location.search.includes('type=recovery');if(recovery&&data?.session?.user){currentUser=data.session.user;showNewPasswordForm();return}if(data?.session?.user){currentUser=data.session.user;await start()}})();
 </script>
 </body>
 </html>
