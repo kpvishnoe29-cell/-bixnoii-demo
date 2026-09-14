@@ -361,6 +361,14 @@ async function syncCloudProfileMeta(pushLocal=true){
     if(!data.profile.phone)data.profile.phone=p.phone||'';
     data.profile.email=cloudUser.email||p.email||data.profile.email||'';
     localStorage.setItem(LS_KEY,JSON.stringify(data));
+    if(data.profile.accountStatus==='suspended'){
+      await sb.auth.signOut();
+      cloudUser=null;
+      clearInterval(cloudPollTimer);
+      showAuthGate();
+      authMessage('Your BIXNOII account is currently suspended. Please contact support with your UID: '+(data.profile.uid||'—'),'error');
+      return;
+    }
     renderAll();
   }catch(e){console.warn('Profile identity sync failed',e)}
 }
@@ -691,7 +699,7 @@ function openMoreQuick(){modal(`<h3>More</h3><div class="menu-grid"><button clas
 
 function openBackupMenu(){modal(`<h3>Backup & Data</h3><div class="form"><button class="primary" onclick="exportData()">Export JSON Backup</button><label class="secondary" style="display:block;text-align:center;padding:13px;border-radius:16px;cursor:pointer">Import Backup<input type="file" accept="application/json" hidden onchange="importData(event)"></label><div class="smallnote">Data local device पर भी save रहता है और login होने पर Supabase Cloud में automatically sync होता है.</div><button class="secondary" onclick="openMoreQuick()">Back</button></div>`)}
 function openHomeAddMenu(){modal(`<h3>Add Entry</h3><div class="quick" style="grid-template-columns:repeat(2,1fr)"><button class="qbtn" onclick="openDispatchPlatformModal()"><div class="qico"><span class="ui-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 6h11v10H3z"/><path d="M14 10h4l3 3v3h-7z"/><circle cx="7" cy="18" r="2"/><circle cx="18" cy="18" r="2"/></svg></span></div><span>Dispatch</span></button><button class="qbtn" onclick="openReturnCountModal()"><div class="qico"><span class="ui-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v6h6"/></svg></span></div><span>Return / RTO</span></button><button class="qbtn" onclick="openPaymentModal()"><div class="qico"><span class="ui-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 7h15a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h13"/><path d="M16 13h5"/><circle cx="16" cy="13" r="1"/></svg></span></div><span>Payment</span></button><button class="qbtn" onclick="openPurchaseModal()"><div class="qico">${appIcon('cart')}</div><span>Stock Purchase</span></button><button class="qbtn" onclick="openExpenseModal()"><div class="qico"><span class="ui-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2z"/><path d="M9 8h6M9 12h6M9 16h3"/></svg></span></div><span>Expense</span></button><button class="qbtn" onclick="switchPage('inventory');closeModal()"><div class="qico">${appIcon('inventory')}</div><span>Inventory</span></button></div>`)}
-function exportData(){const blob=new Blob([JSON.stringify({app:'BIXNOII',version:'4.2',exportedAt:new Date().toISOString(),data},null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='bixnoii-backup-'+todayISO()+'.json';a.click();URL.revokeObjectURL(a.href);toast('Backup exported')}
+function exportData(){const blob=new Blob([JSON.stringify({app:'BIXNOII',version:'4.3',exportedAt:new Date().toISOString(),data},null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='bixnoii-backup-'+todayISO()+'.json';a.click();URL.revokeObjectURL(a.href);toast('Backup exported')}
 function importData(e){const f=e.target.files?.[0];if(!f)return;const r=new FileReader();r.onload=()=>{try{const obj=JSON.parse(r.result);data=normalize(obj.data||obj);ensureDailyBackfill();save();closeModal();toast('Backup imported')}catch(err){toast('Invalid backup file')}};r.readAsText(f)}
 function toast(t){const el=$('toast');el.textContent=t;el.classList.remove('hidden');clearTimeout(window._tt);window._tt=setTimeout(()=>el.classList.add('hidden'),2300)}
 bootCloud();
