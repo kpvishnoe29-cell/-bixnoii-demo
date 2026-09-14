@@ -342,6 +342,7 @@
 <div id="modalRoot"></div><div id="toast" class="toast hidden"></div><script>const PLATFORMS=['Meesho','Flipkart','Amazon'];
 const EXPENSE_CATEGORIES=['Packing Material','Fuel','Transport / Courier','Electricity','Rent','Subscription / Software','Salary / Labour','Advertising / Marketing','Internet / Phone','Office Supplies','Repairs / Maintenance','Tax / Government Fees','Bank Charges','Professional Fees','Other'];
 const LS_KEY='bixnoii_v3';
+const USER_LS_PREFIX='bixnoii_user_v1:';
 const $=id=>document.getElementById(id);
 
 function appIcon(name){const paths={
@@ -388,11 +389,20 @@ const sum=(a,fn)=>a.reduce((t,x)=>t+Number(fn(x)||0),0);
 const uid=p=>p+'-'+Date.now()+'-'+Math.random().toString(36).slice(2,7);
 const seed={meta:{trackingStartDate:todayISO()},profile:{businessName:'',ownerName:'',phone:'',email:'',photo:''},dailyOrders:[],dispatches:[],returns:[],restocks:[],payments:[],purchases:[],expenses:[],products:[],documents:[],invoices:[],claims:[]};
 function normalize(d){d=d||{};const oldOrders=Array.isArray(d.dailyOrders)?d.dailyOrders:[];let start=d.meta?.trackingStartDate||oldOrders.map(x=>x.date).filter(Boolean).sort()[0]||todayISO();return {meta:{trackingStartDate:start},profile:{businessName:d.profile?.businessName||'',ownerName:d.profile?.ownerName||'',phone:d.profile?.phone||'',email:d.profile?.email||'',photo:d.profile?.photo||'',uid:d.profile?.uid||null,accountStatus:d.profile?.accountStatus||'active'},dailyOrders:oldOrders,dispatches:Array.isArray(d.dispatches)?d.dispatches:[],returns:Array.isArray(d.returns)?d.returns:[],restocks:Array.isArray(d.restocks)?d.restocks:[],payments:Array.isArray(d.payments)?d.payments:[],purchases:Array.isArray(d.purchases)?d.purchases:[],expenses:Array.isArray(d.expenses)?d.expenses:[],products:Array.isArray(d.products)?d.products:[],documents:Array.isArray(d.documents)?d.documents:[],invoices:Array.isArray(d.invoices)?d.invoices:[],claims:Array.isArray(d.claims)?d.claims:[]}}
-let raw=localStorage.getItem(LS_KEY)||localStorage.getItem('bixnoii_v2');
-let data=normalize(raw?JSON.parse(raw):seed);
-function save(){localStorage.setItem(LS_KEY,JSON.stringify(data));renderAll();scheduleCloudSave()}
+let data=normalize(seed);
+function userStateKey(userId){return USER_LS_PREFIX+String(userId||'')}
+function loadCachedStateForUser(userId){
+  try{
+    const raw=localStorage.getItem(userStateKey(userId));
+    return normalize(raw?JSON.parse(raw):seed);
+  }catch(e){return normalize(seed)}
+}
+function cacheCurrentState(){
+  if(cloudUser?.id)localStorage.setItem(userStateKey(cloudUser.id),JSON.stringify(data));
+}
+function save(){cacheCurrentState();renderAll();scheduleCloudSave()}
 
-const APP_VERSION='5.6';
+const APP_VERSION='5.7';
 const SUPABASE_URL='https://tducbuscraurojyewliy.supabase.co';
 const SUPABASE_KEY='sb_publishable_BgTE00AlTNV39wm4JBto0g_q2doc1wk';
 const sb=window.supabase?.createClient(SUPABASE_URL,SUPABASE_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
@@ -423,9 +433,9 @@ async function submitAuth(){
   setAuthWorking(true);
   try{
     if(authMode==='signup'){
-      const {data:out,error}=await sb.auth.signUp({email,password,options:{data:{business_name:business,owner_name:owner,phone},emailRedirectTo:'https://kpvishnoe29-cell.github.io/-bixnoii-demo/'}});
+      const {data:out,error}=await sb.auth.signUp({email,password,options:{data:{business_name:business,owner_name:owner,phone},emailRedirectTo:window.location.origin+'/'}});
       if(error)throw error;
-      if(out?.session){data.profile.businessName=business;data.profile.ownerName=owner;data.profile.phone=phone;data.profile.email=email;localStorage.setItem(LS_KEY,JSON.stringify(data));await enterCloud(out.user);authMessage('Account created successfully.','info')}
+      if(out?.session){data.profile.businessName=business;data.profile.ownerName=owner;data.profile.phone=phone;data.profile.email=email;cacheCurrentState();await enterCloud(out.user);authMessage('Account created successfully.','info')}
       else authMessage('Account created, but email confirmation is still enabled in Supabase. Disable Confirm email in Authentication → Providers → Email for direct signup.','error');
     }else{
       const {data:out,error}=await sb.auth.signInWithPassword({email,password});
@@ -467,7 +477,7 @@ async function syncCloudProfileMeta(pushLocal=true){
     if(!data.profile.ownerName)data.profile.ownerName=p.owner_name||'';
     if(!data.profile.phone)data.profile.phone=p.phone||'';
     data.profile.email=cloudUser.email||p.email||data.profile.email||'';
-    localStorage.setItem(LS_KEY,JSON.stringify(data));
+    cacheCurrentState();
     if(data.profile.accountStatus==='suspended'){
       await sb.auth.signOut();
       cloudUser=null;
@@ -488,7 +498,9 @@ async function sendDiagnosticsHeartbeat(){
 }
 async function enterCloud(user){
   if(!user)return showAuthGate();
-  cloudUser=user;hideAuthGate();updateCloudStatus('saving');
+  cloudUser=user;
+  data=loadCachedStateForUser(user.id);
+  hideAuthGate();updateCloudStatus('saving');
   if(data.profile&&!data.profile.email)data.profile.email=user.email||'';
   await loadCloudState();
   await syncCloudProfileMeta(true);
@@ -502,10 +514,14 @@ async function loadCloudState(){
     if(error)throw error;
     if(row?.data&&Object.keys(row.data).length){
       data=normalize(row.data);
-      localStorage.setItem(LS_KEY,JSON.stringify(data));
+      cacheCurrentState();
       cloudLastRemoteAt=row.updated_at?Date.parse(row.updated_at):Date.now();
       ensureDailyBackfill();renderAll();updateCloudStatus('synced');await migrateLegacyAssets();
     }else{
+      // Brand-new accounts always start with a clean state.
+      // Never copy another signed-in user's browser cache.
+      data=normalize(seed);
+      cacheCurrentState();
       await pushCloudState(true);await migrateLegacyAssets();
     }
   }catch(e){updateCloudStatus('offline');console.warn('Cloud load failed',e)}
@@ -534,7 +550,7 @@ async function checkAccountAccess(){
     if(error)throw error;
     if(data.profile){data.profile.uid=p.uid||data.profile.uid||null;data.profile.accountStatus=p.account_status||'active'}
     if(p.account_status==='suspended'){
-      localStorage.setItem(LS_KEY,JSON.stringify(data));
+      cacheCurrentState();
       await sb.auth.signOut();
       cloudUser=null;
       clearInterval(cloudPollTimer);
@@ -553,7 +569,7 @@ async function pullCloudIfNewer(){
     if(error)throw error;
     const t=row?.updated_at?Date.parse(row.updated_at):0;
     if(t>cloudLastRemoteAt+500&&row?.data){
-      data=normalize(row.data);cloudLastRemoteAt=t;localStorage.setItem(LS_KEY,JSON.stringify(data));ensureDailyBackfill();await hydrateCloudAssets();renderAll();
+      data=normalize(row.data);cloudLastRemoteAt=t;cacheCurrentState();ensureDailyBackfill();await hydrateCloudAssets();renderAll();
     }
     updateCloudStatus('synced');
   }catch(e){updateCloudStatus('offline')}
@@ -561,7 +577,7 @@ async function pullCloudIfNewer(){
 function startCloudPolling(){clearInterval(cloudPollTimer);cloudPollTimer=setInterval(pullCloudIfNewer,15000)}
 async function logoutCloud(){
   try{if(cloudDirty)await pushCloudState(true);await sb?.auth.signOut()}catch(e){}
-  cloudUser=null;clearInterval(cloudPollTimer);localStorage.removeItem(LS_KEY);data=normalize(seed);renderAll();closeModal();showAuthGate();
+  cloudUser=null;clearInterval(cloudPollTimer);data=normalize(seed);renderAll();closeModal();showAuthGate();
 }
 async function bootCloud(){
   renderAll();
@@ -633,7 +649,7 @@ async function hydrateCloudAssets(){
   refs.forEach(r=>{if(r.storagePath&&!byPath.has(r.storagePath))byPath.set(r.storagePath,r)});
   await Promise.all([...byPath.values()].map(refreshAssetRef));
   for(const r of refs){const src=byPath.get(r.storagePath);if(src&&src!==r)r.signedUrl=src.signedUrl||''}
-  localStorage.setItem(LS_KEY,JSON.stringify(data));
+  cacheCurrentState();
   renderAll();
 }
 function cloudSafeData(){
@@ -693,14 +709,14 @@ async function migrateLegacyAssets(){
       if(next!==old){x.dataUrl=next;changed=true}
     }
   }
-  if(changed){localStorage.setItem(LS_KEY,JSON.stringify(data));cloudDirty=true;renderAll();await pushCloudState(true)}
+  if(changed){cacheCurrentState();cloudDirty=true;renderAll();await pushCloudState(true)}
   await hydrateCloudAssets();
 }
 
 function parseDate(s){return new Date(s+'T12:00:00')}
 function addDays(s,n){const d=parseDate(s);d.setDate(d.getDate()+n);return d.toISOString().slice(0,10)}
 function upsertDaily(date,platform,total,manual=true){let r=data.dailyOrders.find(x=>x.date===date);if(!r){r={id:uid('DAY'),date,Meesho:0,Flipkart:0,Amazon:0,auto:true};data.dailyOrders.push(r)}if(platform){r[platform]=Number(total||0);if(manual)r.auto=false}return r}
-function ensureDailyBackfill(){const start=data.meta.trackingStartDate||todayISO();let cur=start, end=todayISO(), guard=0,changed=false;while(cur<=end&&guard<3660){if(!data.dailyOrders.some(x=>x.date===cur)){data.dailyOrders.push({id:uid('DAY'),date:cur,Meesho:0,Flipkart:0,Amazon:0,auto:true});changed=true}cur=addDays(cur,1);guard++}if(changed)localStorage.setItem(LS_KEY,JSON.stringify(data))}
+function ensureDailyBackfill(){const start=data.meta.trackingStartDate||todayISO();let cur=start, end=todayISO(), guard=0,changed=false;while(cur<=end&&guard<3660){if(!data.dailyOrders.some(x=>x.date===cur)){data.dailyOrders.push({id:uid('DAY'),date:cur,Meesho:0,Flipkart:0,Amazon:0,auto:true});changed=true}cur=addDays(cur,1);guard++}if(changed)cacheCurrentState();}
 function scheduleMidnightCheck(){const now=new Date(),next=new Date(now);next.setHours(24,0,10,0);setTimeout(()=>{ensureDailyBackfill();renderAll();scheduleMidnightCheck()},Math.max(1000,next-now))}
 ensureDailyBackfill();scheduleMidnightCheck();
 function switchPage(id){document.querySelectorAll('.page').forEach(x=>x.classList.add('hidden'));$(id).classList.remove('hidden');document.querySelectorAll('.nav').forEach(n=>n.classList.toggle('active',n.dataset.page===id));$('homeFab')?.classList.toggle('hidden',id!=='home');renderAll()}
