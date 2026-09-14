@@ -197,6 +197,22 @@
 .account-powered{text-align:center;color:var(--muted);font-size:9.5px;padding:4px 0 2px}.account-powered b{color:var(--primary);letter-spacing:.5px}
 #signupFields{display:grid;gap:0}
 #signupFields.hidden{display:none}
+
+/* v5.4 Inventory Stock + Purchase History */
+.inventory-tabs{display:grid;grid-template-columns:1fr 1fr;gap:6px;background:#eeecf6;border:1px solid #e5e1f4;border-radius:17px;padding:5px;margin-bottom:14px}
+.inventory-tab{border:0;background:transparent;color:#77738a;border-radius:13px;padding:11px 12px;font-size:11px;font-weight:850;display:flex;align-items:center;justify-content:center;gap:7px}
+.inventory-tab .ui-icon{width:17px;height:17px}.inventory-tab.active{background:#fff;color:var(--primary);box-shadow:0 5px 14px rgba(35,28,77,.08)}
+.purchase-history-hero{display:flex;align-items:center;justify-content:space-between;gap:12px;background:linear-gradient(135deg,#292047,#6b4eff);color:#fff;border-radius:20px;padding:16px;margin-bottom:12px;box-shadow:0 12px 28px rgba(91,64,218,.18)}
+.purchase-history-hero span{display:block;font-size:9px;opacity:.8}.purchase-history-hero b{display:block;font-size:24px;margin-top:3px}.purchase-history-hero small{display:block;font-size:9px;opacity:.76;margin-top:3px}.purchase-history-hero .secondary{background:rgba(255,255,255,.16);color:#fff;padding:9px 12px}
+.purchase-range-tabs{display:flex;gap:7px;overflow-x:auto;padding:1px 0 8px;scrollbar-width:none}.purchase-range-tabs::-webkit-scrollbar{display:none}
+.purchase-range-tabs button{flex:0 0 auto;border:1px solid #e6e2f3;background:#fff;color:#6f6a80;border-radius:999px;padding:8px 11px;font-size:9.5px;font-weight:850}
+.purchase-range-tabs button.active{background:var(--primary);border-color:var(--primary);color:#fff}
+.purchase-filter-label{font-size:9.5px;color:var(--muted);padding:9px 2px 7px}
+.purchase-history-card{background:#fff;border:1px solid #ece9f5;border-radius:18px;padding:14px;margin-bottom:10px;box-shadow:0 7px 19px rgba(35,28,77,.045)}
+.purchase-history-card-head{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}.purchase-history-card-head b{font-size:12.5px;display:block}.purchase-history-card-head .money{font-size:13px;white-space:nowrap}
+.purchase-history-meta{display:flex;gap:6px;flex-wrap:wrap;margin-top:7px}.purchase-history-meta span{font-size:8.8px;color:#666276;background:#f7f6fb;border:1px solid #eeebf5;padding:5px 7px;border-radius:999px}
+.purchase-history-bottom{display:flex;align-items:center;justify-content:space-between;gap:9px;margin-top:10px;padding-top:9px;border-top:1px solid #f0eef5}.purchase-history-bottom>span{font-size:9px;color:var(--muted)}.purchase-history-bottom .mini-actions{margin:0}
+@media(min-width:960px){#inventoryHistoryView #purchaseHistoryList{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.purchase-history-card{margin:0}}
 </style><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script></head><body><div id="authGate" class="auth-gate"><div class="auth-card"><div class="auth-logo">B</div><h2>BIXNOII Cloud</h2><p>Sign in to keep your business data safe and synced across mobile, web and future Windows app.</p><div class="auth-tabs"><button id="loginTab" class="auth-tab active" onclick="setAuthMode('login')">Login</button><button id="signupTab" class="auth-tab" onclick="setAuthMode('signup')">Create account</button></div><div class="form"><div id="signupFields" class="hidden"><div class="field"><label>Business Name</label><input id="authBusiness" autocomplete="organization" placeholder="e.g. KP Enterprises"></div><div class="field"><label>Your Name</label><input id="authOwner" autocomplete="name" placeholder="Owner name"></div><div class="field"><label>Mobile Number</label><input id="authPhone" type="tel" inputmode="numeric" autocomplete="tel" placeholder="10-digit mobile number"></div></div><div class="field"><label>Email</label><input id="authEmail" type="email" autocomplete="email" placeholder="you@example.com"></div><div class="field"><label>Password</label><input id="authPassword" type="password" autocomplete="current-password" placeholder="Minimum 6 characters"></div><button id="authSubmitBtn" class="primary" onclick="submitAuth()">Login</button><div id="authMessage"></div></div></div></div><div class="app">
 <header class="topbar"><button class="brand brand-button" onclick="openProfile()" aria-label="Business profile"><div id="brandLogo" class="logo">B</div><div><h1 id="brandName">BIXNOII</h1><small>Powered by BIXNOII • Tap for profile & account</small></div></button><div class="top-actions"><span id="cloudStatusBadge" class="cloud-badge hidden"><span id="cloudDot" class="cloud-dot"></span><span id="cloudStatusText">Cloud</span></span><button class="iconbtn" onclick="openMoreQuick()"><span class="ui-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="5" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="19" r="1"/></svg></span></button></div></header>
 <main>
@@ -248,9 +264,39 @@
 </section>
 
 <section id="inventory" class="page hidden">
-  <div class="row" style="margin-bottom:12px"><div><h3 style="margin:0">Inventory</h3><div class="muted" id="inventorySummary">0 products</div></div><button class="primary" onclick="openPurchaseModal()"><span class="ui-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="9" cy="20" r="1.5"/><circle cx="18" cy="20" r="1.5"/><path d="M3 4h2l2.4 10.5a2 2 0 0 0 2 1.5h8.7a2 2 0 0 0 1.9-1.4L22 8H7"/></svg></span> Purchase</button></div>
-  <input id="inventorySearch" class="searchbox" placeholder="Search product or SKU" oninput="renderInventory()">
-  <div style="height:12px"></div><div id="inventoryList"></div>
+  <div class="row" style="margin-bottom:12px">
+    <div><h3 style="margin:0">Inventory</h3><div class="muted" id="inventorySummary">0 products</div></div>
+    <button id="inventoryPurchaseBtn" class="primary" onclick="openPurchaseModal()"><span class="ui-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="9" cy="20" r="1.5"/><circle cx="18" cy="20" r="1.5"/><path d="M3 4h2l2.4 10.5a2 2 0 0 0 2 1.5h8.7a2 2 0 0 0 1.9-1.4L22 8H7"/></svg></span> Add Purchase</button>
+  </div>
+
+  <div class="inventory-tabs">
+    <button id="inventoryTabStock" class="inventory-tab active" onclick="setInventoryMode('stock')"><span class="ui-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 8h7v7H4zM13 8h7v7h-7zM4 17h7v4H4zM13 17h7v4h-7z"/><path d="M7.5 8V5h9v3"/></svg></span><span>Stock</span></button>
+    <button id="inventoryTabHistory" class="inventory-tab" onclick="setInventoryMode('history')"><span class="ui-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 7h16v14H4z"/><path d="M3 3h18v4H3z"/><path d="M9 11h6"/></svg></span><span>Purchase History</span></button>
+  </div>
+
+  <div id="inventoryStockView">
+    <input id="inventorySearch" class="searchbox" placeholder="Search product or SKU" oninput="renderInventory()">
+    <div style="height:12px"></div><div id="inventoryList"></div>
+  </div>
+
+  <div id="inventoryHistoryView" class="hidden">
+    <div class="purchase-history-hero">
+      <div><span>Filtered Purchase Value</span><b id="purchaseHistoryValue">₹0</b><small id="purchaseHistoryCount">0 purchases</small></div>
+      <button class="secondary" onclick="openHistoryFilter('purchase')">Filter</button>
+    </div>
+
+    <div class="purchase-range-tabs">
+      <button id="purchasePresetToday" onclick="setPurchaseHistoryPreset('today')">Today</button>
+      <button id="purchasePresetYesterday" onclick="setPurchaseHistoryPreset('yesterday')">Yesterday</button>
+      <button id="purchasePreset30" onclick="setPurchaseHistoryPreset('30d')">Last 30 Days</button>
+      <button id="purchasePresetMonth" onclick="setPurchaseHistoryPreset('month')">This Month</button>
+      <button id="purchasePresetAll" onclick="setPurchaseHistoryPreset('all')">All</button>
+    </div>
+
+    <input id="purchaseHistorySearch" class="searchbox" placeholder="Search product, SKU, supplier or invoice..." oninput="setPurchaseHistorySearch(this.value)">
+    <div id="purchaseHistoryFilterLabel" class="purchase-filter-label"></div>
+    <div id="purchaseHistoryList"></div>
+  </div>
 </section>
 </main>
 <button id="homeFab" class="fab" onclick="openHomeAddMenu()" aria-label="Add entry"><span class="ui-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/></svg></span></button>
@@ -317,7 +363,7 @@ let raw=localStorage.getItem(LS_KEY)||localStorage.getItem('bixnoii_v2');
 let data=normalize(raw?JSON.parse(raw):seed);
 function save(){localStorage.setItem(LS_KEY,JSON.stringify(data));renderAll();scheduleCloudSave()}
 
-const APP_VERSION='5.3';
+const APP_VERSION='5.4';
 const SUPABASE_URL='https://tducbuscraurojyewliy.supabase.co';
 const SUPABASE_KEY='sb_publishable_BgTE00AlTNV39wm4JBto0g_q2doc1wk';
 const sb=window.supabase?.createClient(SUPABASE_URL,SUPABASE_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
@@ -658,7 +704,92 @@ function renderExpenses(){const f=dateFilters.expenses,filterEl=$('expensesRange
 function detailLine(label,value){return `<div class="txn-detail-line"><span>${esc(label)}</span><b>${esc(value||'—')}</b></div>`}
 function openPaymentDetail(id){const x=data.payments.find(v=>v.id===id);if(!x)return;modal(`<h3>Payment Details</h3><div class="txn-detail-hero"><div class="txn-detail-icon">${appIcon('payment')}</div><h2 class="profit-positive">+${money(x.amount)}</h2><p>Payment received successfully</p></div><div class="txn-detail-box">${detailLine('Platform',x.platform)}${detailLine('Date',datePretty(x.date))}${detailLine('Settlement / Reference',x.ref||x.settlementRef||'Not added')}${detailLine('Transaction ID',x.id)}</div>${x.note?`<div class="txn-detail-note"><span>Note</span><b>${esc(x.note)}</b></div>`:''}<div class="actions" style="margin-top:14px"><button class="primary" onclick="closeModal()">Done</button></div>`)}
 function openExpenseDetail(id){const x=data.expenses.find(v=>v.id===id);if(!x)return;const receipt=x.invoice?assetUrl(x.invoice):'';modal(`<h3>Expense Details</h3><div class="txn-detail-hero"><div class="txn-detail-icon">${appIcon('expense')}</div><h2 class="profit-negative">− ${money(x.amount)}</h2><p>Business expense</p></div><div class="txn-detail-box">${detailLine('Category',x.category||'Business Expense')}${detailLine('Date',datePretty(x.date))}${detailLine('Payment Mode',x.paymentMode||'Not added')}${detailLine('Transaction ID',x.id)}</div>${x.note?`<div class="txn-detail-note"><span>Note</span><b>${esc(x.note)}</b></div>`:''}${receipt?`<div class="mini-actions" style="margin-top:14px"><button class="secondary" onclick="viewImage('${receipt}','${esc(x.invoice.name||'Expense Receipt')}')">View Receipt</button><button class="secondary" onclick="shareDataUrl('${receipt}','${esc(x.invoice.name||'Expense Receipt')}')">${appIcon('share')} Share Receipt</button></div>`:''}<div class="actions" style="margin-top:14px"><button class="primary" onclick="closeModal()">Done</button></div>`)}
-function renderInventory(){const q=($('inventorySearch')?.value||'').toLowerCase();const list=data.products.filter(p=>!q||String(p.name).toLowerCase().includes(q)||String(p.sku).toLowerCase().includes(q)).sort((a,b)=>String(a.name).localeCompare(String(b.name)));const low=data.products.filter(p=>Number(p.stock||0)<=Number(p.lowStockLevel??5)).length;$('inventorySummary').textContent=`${data.products.length} products • ${low} low stock`;$('inventoryList').innerHTML=list.map(p=>{const isLow=Number(p.stock||0)<=Number(p.lowStockLevel??5);const gross=Number(p.unitPrice||0)*(1+Number(p.gst||0)/100);return `<div class="card ${isLow?'low-stock-card':''}"><div class="inventory-card"><img class="product-photo" src="${assetUrl(p.photo)}" onerror="this.style.visibility='hidden'"><div><b>${esc(p.name)}</b><div class="muted">SKU: ${esc(p.sku)}</div><div class="muted">Purchase ${money(p.unitPrice)} + ${p.gst||0}% GST • ${money(gross)}/unit</div><div class="inventory-marketplaces"><span>Shared stock</span>${PLATFORMS.map(platformIcon).join('')}</div><div style="margin-top:6px">${isLow?'<span class="pill red">Low Stock</span>':'<span class="pill green">In Stock</span>'}</div></div><div><div class="stock-num">${p.stock||0}</div><div class="muted" style="text-align:right">units</div></div></div><div class="mini-actions" style="margin-top:11px"><button class="secondary" onclick="openProductSettings('${p.id}')">Stock Settings</button><button class="secondary" onclick="openPurchaseModal('${p.sku}')">Purchase More</button></div></div>`}).join('')||empty('Inventory is empty','Add a stock purchase to create your first product')}
+let inventoryMode='stock',purchaseHistoryPreset='month';
+
+function setInventoryMode(mode){
+  inventoryMode=mode==='history'?'history':'stock';
+  $('inventoryTabStock')?.classList.toggle('active',inventoryMode==='stock');
+  $('inventoryTabHistory')?.classList.toggle('active',inventoryMode==='history');
+  $('inventoryStockView')?.classList.toggle('hidden',inventoryMode!=='stock');
+  $('inventoryHistoryView')?.classList.toggle('hidden',inventoryMode!=='history');
+  const btn=$('inventoryPurchaseBtn');if(btn)btn.textContent=inventoryMode==='history'?'+ Add Purchase':'Add Purchase';
+  renderInventory();
+}
+
+function dateShiftISO(days){
+  const d=new Date();d.setHours(12,0,0,0);d.setDate(d.getDate()+days);
+  const off=d.getTimezoneOffset();return new Date(d.getTime()-off*60000).toISOString().slice(0,10)
+}
+
+function setPurchaseHistoryPreset(preset){
+  purchaseHistoryPreset=preset;
+  const f=historyFilters.purchase;
+  f.query=$('purchaseHistorySearch')?.value.trim()||f.query||'';
+  if(preset==='today'){f.month='';f.from=todayISO();f.to=todayISO()}
+  if(preset==='yesterday'){const y=dateShiftISO(-1);f.month='';f.from=y;f.to=y}
+  if(preset==='30d'){f.month='';f.from=dateShiftISO(-29);f.to=todayISO()}
+  if(preset==='month'){f.month=currentMonthISO();f.from='';f.to=''}
+  if(preset==='all'){f.month='';f.from='';f.to=''}
+  renderPurchaseHistoryPanel();
+}
+
+function setPurchaseHistorySearch(v){
+  historyFilters.purchase.query=String(v||'').trim();
+  renderPurchaseHistoryPanel();
+}
+
+function purchaseFilterText(){
+  const f=historyFilters.purchase;
+  if(purchaseHistoryPreset==='today')return 'Showing today';
+  if(purchaseHistoryPreset==='yesterday')return 'Showing yesterday';
+  if(purchaseHistoryPreset==='30d')return 'Showing last 30 days';
+  if(purchaseHistoryPreset==='month')return 'Showing '+monthLabel(f.month||currentMonthISO());
+  if(purchaseHistoryPreset==='all')return 'Showing all purchases';
+  const bits=[];if(f.month)bits.push(monthLabel(f.month));if(f.from)bits.push('From '+f.from);if(f.to)bits.push('To '+f.to);return bits.length?'Custom filter • '+bits.join(' • '):'Custom filter';
+}
+
+function renderPurchaseHistoryPanel(){
+  const f=historyFilters.purchase,q=String(f.query||'').toLowerCase();
+  const list=data.purchases.filter(x=>matchHistoryDate(x.date,f)).filter(x=>!q||[x.productName,x.item,x.sku,x.supplier,x.invoiceNumber].some(v=>String(v||'').toLowerCase().includes(q))).slice().sort((a,b)=>String(b.date).localeCompare(String(a.date)));
+  const total=sum(list,x=>x.amount);
+  if($('purchaseHistoryValue'))$('purchaseHistoryValue').textContent=money(total);
+  if($('purchaseHistoryCount'))$('purchaseHistoryCount').textContent=list.length+' purchase'+(list.length===1?'':'s');
+  if($('purchaseHistorySearch')&&document.activeElement!==$('purchaseHistorySearch'))$('purchaseHistorySearch').value=f.query||'';
+  if($('purchaseHistoryFilterLabel'))$('purchaseHistoryFilterLabel').textContent=purchaseFilterText();
+  const map={today:'purchasePresetToday',yesterday:'purchasePresetYesterday','30d':'purchasePreset30',month:'purchasePresetMonth',all:'purchasePresetAll'};
+  Object.values(map).forEach(id=>$(id)?.classList.remove('active'));$(map[purchaseHistoryPreset])?.classList.add('active');
+  if($('purchaseHistoryList'))$('purchaseHistoryList').innerHTML=list.map(x=>`<div class="purchase-history-card">
+    <div class="purchase-history-card-head">
+      <div><b>${esc(x.productName||x.item||'Stock Purchase')}</b><div class="muted">${esc(x.sku||'No SKU')} • ${esc(x.date||'')}</div></div>
+      <div class="money">${money(x.amount)}</div>
+    </div>
+    <div class="purchase-history-meta">
+      <span>${Number(x.qty||0)} units</span>
+      <span>Unit ${money(x.unitPrice||0)}</span>
+      <span>GST ${Number(x.gst||0)}%</span>
+      <span>${esc(x.supplier||'No supplier')}</span>
+    </div>
+    <div class="purchase-history-bottom">
+      <span>${x.invoiceNumber?'Invoice '+esc(x.invoiceNumber):'No invoice number'}</span>
+      ${x.invoice?`<div class="mini-actions"><button class="secondary" onclick="viewImage('${assetUrl(x.invoice)}','${esc(x.invoice.name||'Invoice')}')">View</button><button class="secondary" onclick="shareDataUrl('${assetUrl(x.invoice)}','${esc(x.invoice.name||'Invoice')}')">Share</button></div>`:'<span>No invoice attached</span>'}
+    </div>
+  </div>`).join('')||empty('No purchases found','Change filter or add a stock purchase');
+}
+
+function renderInventory(){
+  const q=($('inventorySearch')?.value||'').toLowerCase();
+  const list=data.products.filter(p=>!q||String(p.name).toLowerCase().includes(q)||String(p.sku).toLowerCase().includes(q)).sort((a,b)=>String(a.name).localeCompare(String(b.name)));
+  const low=data.products.filter(p=>Number(p.stock||0)<=Number(p.lowStockLevel??5)).length;
+  if($('inventorySummary'))$('inventorySummary').textContent=inventoryMode==='history'?data.purchases.length+' purchase records':`${data.products.length} products • ${low} low stock`;
+  $('inventoryTabStock')?.classList.toggle('active',inventoryMode==='stock');
+  $('inventoryTabHistory')?.classList.toggle('active',inventoryMode==='history');
+  $('inventoryStockView')?.classList.toggle('hidden',inventoryMode!=='stock');
+  $('inventoryHistoryView')?.classList.toggle('hidden',inventoryMode!=='history');
+  if($('inventoryList'))$('inventoryList').innerHTML=list.map(p=>{const isLow=Number(p.stock||0)<=Number(p.lowStockLevel??5);const gross=Number(p.unitPrice||0)*(1+Number(p.gst||0)/100);return `<div class="card ${isLow?'low-stock-card':''}"><div class="inventory-card"><img class="product-photo" src="${assetUrl(p.photo)}" onerror="this.style.visibility='hidden'"><div><b>${esc(p.name)}</b><div class="muted">SKU: ${esc(p.sku)}</div><div class="muted">Purchase ${money(p.unitPrice)} + ${p.gst||0}% GST • ${money(gross)}/unit</div><div class="inventory-marketplaces"><span>Shared stock</span>${PLATFORMS.map(platformIcon).join('')}</div><div style="margin-top:6px">${isLow?'<span class="pill red">Low Stock</span>':'<span class="pill green">In Stock</span>'}</div></div><div><div class="stock-num">${p.stock||0}</div><div class="muted" style="text-align:right">units</div></div></div><div class="mini-actions" style="margin-top:11px"><button class="secondary" onclick="openProductSettings('${p.id}')">Stock Settings</button><button class="secondary" onclick="openPurchaseModal('${p.sku}')">Purchase More</button></div></div>`}).join('')||empty('Inventory is empty','Add a stock purchase to create your first product');
+  renderPurchaseHistoryPanel();
+}
+
+function openPurchaseHistory(){closeModal();switchPage('inventory');setInventoryMode('history')}
 function empty(title,sub){return `<div class="empty">◌<b>${esc(title)}</b><div>${esc(sub)}</div></div>`}
 function modal(html){$('modalRoot').innerHTML=`<div class="modal" onclick="if(event.target===this)closeModal()"><div class="sheet"><div class="grab"></div>${html}</div></div>`}
 function closeModal(){$('modalRoot').innerHTML=''}
@@ -722,16 +853,14 @@ let summaryMonth=currentMonthISO();
 function matchHistoryDate(date,f){date=String(date||'');if(f.month&&!date.startsWith(f.month))return false;if(f.from&&date<f.from)return false;if(f.to&&date>f.to)return false;return true}
 function historyHeader(title,type,count,totalText=''){const f=historyFilters[type];return `<div class="history-head"><div><h3>${esc(title)}</h3><div class="muted">${count} record(s)${totalText?' • '+totalText:''}</div></div><div class="history-tools"><span class="month-chip">${esc(monthLabel(f.month))}</span><button class="filter-btn" onclick="openHistoryFilter('${type}')">⚲ Filter</button></div></div>`}
 function openHistoryFilter(type){const f=historyFilters[type],title={purchase:'Purchase',expense:'Expense',invoice:'Invoice'}[type]||'History';let extra='';if(type==='purchase')extra=`<div class="field"><label>Product / SKU / Supplier</label><input id="hf_query" value="${esc(f.query||'')}" placeholder="Search"></div>`;if(type==='expense')extra=`<div class="field"><label>Expense Category</label><select id="hf_category"><option>All</option>${EXPENSE_CATEGORIES.map(x=>`<option ${x===f.category?'selected':''}>${x}</option>`).join('')}</select></div>`;if(type==='invoice')extra=`<div class="field"><label>Invoice Source</label><select id="hf_source"><option ${f.source==='All'?'selected':''}>All</option><option ${f.source==='Purchase'?'selected':''}>Purchase</option><option ${f.source==='Expense'?'selected':''}>Expense</option><option ${f.source==='Other'?'selected':''}>Other</option></select></div>`;modal(`<h3>${title} History Filter</h3><div class="form"><div class="field"><label>Month</label><input id="hf_month" type="month" value="${esc(f.month||'')}"></div><div class="split"><div class="field"><label>From Date</label><input id="hf_from" type="date" value="${esc(f.from||'')}"></div><div class="field"><label>To Date</label><input id="hf_to" type="date" value="${esc(f.to||'')}"></div></div>${extra}<div class="smallnote">Month खाली करने पर सभी महीनों में search कर सकते हैं. Date range optional है.</div><div class="actions"><button class="secondary" onclick="resetHistoryFilter('${type}')">Reset</button><button class="primary" onclick="applyHistoryFilter('${type}')">Apply Filter</button></div></div>`) }
-function applyHistoryFilter(type){const f=historyFilters[type];f.month=$('hf_month')?.value||'';f.from=$('hf_from')?.value||'';f.to=$('hf_to')?.value||'';if(type==='purchase')f.query=$('hf_query')?.value.trim()||'';if(type==='expense')f.category=$('hf_category')?.value||'All';if(type==='invoice')f.source=$('hf_source')?.value||'All';if(type==='purchase')openPurchaseHistory();if(type==='expense')openExpenseHistory();if(type==='invoice')openInvoices()}
-function resetHistoryFilter(type){if(type==='purchase')historyFilters.purchase={month:currentMonthISO(),from:'',to:'',query:''};if(type==='expense')historyFilters.expense={month:currentMonthISO(),from:'',to:'',category:'All'};if(type==='invoice')historyFilters.invoice={month:currentMonthISO(),from:'',to:'',source:'All'};if(type==='purchase')openPurchaseHistory();if(type==='expense')openExpenseHistory();if(type==='invoice')openInvoices()}
+function applyHistoryFilter(type){const f=historyFilters[type];f.month=$('hf_month')?.value||'';f.from=$('hf_from')?.value||'';f.to=$('hf_to')?.value||'';if(type==='purchase')f.query=$('hf_query')?.value.trim()||'';if(type==='expense')f.category=$('hf_category')?.value||'All';if(type==='invoice')f.source=$('hf_source')?.value||'All';if(type==='purchase'){purchaseHistoryPreset='custom';openPurchaseHistory()}if(type==='expense')openExpenseHistory();if(type==='invoice')openInvoices()}
+function resetHistoryFilter(type){if(type==='purchase'){historyFilters.purchase={month:currentMonthISO(),from:'',to:'',query:''};purchaseHistoryPreset='month'};if(type==='expense')historyFilters.expense={month:currentMonthISO(),from:'',to:'',category:'All'};if(type==='invoice')historyFilters.invoice={month:currentMonthISO(),from:'',to:'',source:'All'};if(type==='purchase')openPurchaseHistory();if(type==='expense')openExpenseHistory();if(type==='invoice')openInvoices()}
 function monthStats(m){const orders=data.dailyOrders.filter(x=>String(x.date||'').startsWith(m));const platformOrders=Object.fromEntries(PLATFORMS.map(p=>[p,sum(orders,x=>x[p])]));const payment=sum(data.payments.filter(x=>String(x.date||'').startsWith(m)),x=>x.amount);const purchase=sum(data.purchases.filter(x=>String(x.date||'').startsWith(m)),x=>x.amount);const expense=sum(data.expenses.filter(x=>String(x.date||'').startsWith(m)),x=>x.amount);const returns=sum(data.returns.filter(x=>String(x.date||'').startsWith(m)),x=>x.returns);const rto=sum(data.returns.filter(x=>String(x.date||'').startsWith(m)),x=>x.rto);const dispatch=sum(data.dispatches.filter(x=>String(x.date||'').startsWith(m)),x=>sum(x.items||[],i=>i.qty));const inventoryValue=sum(data.products,p=>Number(p.stock||0)*Number(p.unitPrice||0)*(1+Number(p.gst||0)/100));const lowStock=data.products.filter(p=>Number(p.stock||0)<=Number(p.lowStockLevel??5)).length;return {orders:sum(PLATFORMS,p=>platformOrders[p]),platformOrders,payment,purchase,expense,profit:payment-purchase-expense,returns,rto,dispatch,inventoryValue,lowStock}}
 function deltaBadge(cur,prev){if(Number(prev)===0){if(Number(cur)===0)return '<span class="delta flat">0%</span>';return '<span class="delta up">New</span>'}const pct=(Number(cur)-Number(prev))/Math.abs(Number(prev))*100;const cls=pct>0?'up':pct<0?'down':'flat';return `<span class="delta ${cls}">${pct>0?'+':''}${pct.toFixed(1)}%</span>`}
 function orderSeries(m){const [y,mo]=m.split('-').map(Number),maxDay=(m===currentMonthISO()?new Date().getDate():new Date(y,mo,0).getDate());const vals=[],labels=[];for(let day=1;day<=maxDay;day++){const date=`${m}-${String(day).padStart(2,'0')}`;vals.push(sum(PLATFORMS,p=>dayOrders(date,p)));labels.push(String(day))}return {vals,labels}}
 function lineChartSvg(vals,labels){const w=430,h=150,p=18,max=Math.max(1,...vals),n=Math.max(vals.length,1);const pts=vals.map((v,i)=>{const x=n===1?w/2:p+i*(w-2*p)/(n-1),y=h-p-(Number(v||0)/max)*(h-2*p);return [x,y]});const poly=pts.map(x=>x.join(',')).join(' ');const area=pts.length?`${p},${h-p} ${poly} ${pts[pts.length-1][0]},${h-p}`:'';const mid=Math.floor((labels.length-1)/2);return `<svg class="line-chart" viewBox="0 0 ${w} ${h}" role="img" aria-label="Order trend"><line x1="${p}" y1="${h-p}" x2="${w-p}" y2="${h-p}" stroke="#e9e9f1"/><line x1="${p}" y1="${h/2}" x2="${w-p}" y2="${h/2}" stroke="#f0eef7"/><polygon points="${area}" fill="#f2efff"/><polyline points="${poly}" fill="none" stroke="#6b4eff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>${pts.slice(-1).map(q=>`<circle cx="${q[0]}" cy="${q[1]}" r="5" fill="#6b4eff"/>`).join('')}<text x="${p}" y="${h-2}" font-size="10" fill="#888">${labels[0]||''}</text><text x="${w/2}" y="${h-2}" text-anchor="middle" font-size="10" fill="#888">${labels[mid]||''}</text><text x="${w-p}" y="${h-2}" text-anchor="end" font-size="10" fill="#888">${labels[labels.length-1]||''}</text></svg>`}
 function barRows(rows,asMoney=false){const max=Math.max(1,...rows.map(x=>Math.abs(Number(x[1]||0))));return rows.map(([label,val])=>`<div class="bar-row"><span class="bar-label">${esc(label)}</span><div class="bar-track"><div class="bar-fill" style="width:${Math.abs(Number(val||0))/max*100}%"></div></div><span class="bar-value">${asMoney?money(val):Number(val||0).toLocaleString('en-IN')}</span></div>`).join('')}
 function openBusinessSummary(month=summaryMonth){summaryMonth=month||currentMonthISO();const cur=monthStats(summaryMonth),prev=monthStats(previousMonth(summaryMonth)),series=orderSeries(summaryMonth);const expenseMap={};data.expenses.filter(x=>String(x.date||'').startsWith(summaryMonth)).forEach(x=>expenseMap[x.category]=(expenseMap[x.category]||0)+Number(x.amount||0));const expenseRows=Object.entries(expenseMap).sort((a,b)=>b[1]-a[1]).slice(0,6);modal(`<div class="summary-top"><div><h3>${appIcon('chart')} Business Summary</h3><div class="muted">Complete performance dashboard</div></div><input class="summary-month" type="month" value="${summaryMonth}" onchange="openBusinessSummary(this.value)"></div><div class="summary-hero"><small>${esc(monthLabel(summaryMonth))} • Cash-basis profit</small><strong class="${cur.profit>=0?'':'profit-negative'}">${money(cur.profit)}</strong><div style="font-size:11px;opacity:.86">Payments − Purchases − Expenses</div></div><div class="summary-grid"><div class="summary-kpi"><b>${cur.orders}</b><small>Total Orders</small>${deltaBadge(cur.orders,prev.orders)}</div><div class="summary-kpi"><b>${money(cur.payment)}</b><small>Payments</small>${deltaBadge(cur.payment,prev.payment)}</div><div class="summary-kpi"><b>${money(cur.purchase)}</b><small>Purchases</small>${deltaBadge(cur.purchase,prev.purchase)}</div><div class="summary-kpi"><b>${money(cur.expense)}</b><small>Expenses</small>${deltaBadge(cur.expense,prev.expense)}</div></div><div class="chart-card"><div class="chart-title"><b>Order Trend</b><span>Daily • ${esc(monthLabel(summaryMonth))}</span></div>${lineChartSvg(series.vals,series.labels)}</div><div class="chart-card"><div class="chart-title"><b>Financial Comparison</b><span>This month</span></div>${barRows([['Payment',cur.payment],['Purchase',cur.purchase],['Expense',cur.expense],['Profit',cur.profit]],true)}</div><div class="chart-card"><div class="chart-title"><b>Platform Orders</b><span>${cur.orders} total</span></div>${barRows(PLATFORMS.map(p=>[p,cur.platformOrders[p]]))}</div><div class="chart-card"><div class="chart-title"><b>Expense Breakdown</b><span>Top categories</span></div>${expenseRows.length?barRows(expenseRows,true):'<div class="muted">No expense entries in this month.</div>'}</div><div class="chart-card"><div class="chart-title"><b>Operations Snapshot</b><span>Current position</span></div><div class="summary-statgrid"><div class="summary-stat"><b>${cur.dispatch}</b><span>Dispatched Units</span></div><div class="summary-stat"><b>${cur.returns}</b><span>Returns</span></div><div class="summary-stat"><b>${cur.rto}</b><span>RTO</span></div><div class="summary-stat"><b>${money(cur.inventoryValue)}</b><span>Inventory Value</span></div><div class="summary-stat"><b>${data.products.length}</b><span>Products</span></div><div class="summary-stat"><b class="${cur.lowStock?'profit-negative':''}">${cur.lowStock}</b><span>Low Stock</span></div></div></div><button class="secondary" style="width:100%" onclick="openMoreQuick()">${appIcon('chevronLeft')} Back to More</button>`)}
-
-function openPurchaseHistory(){const f=historyFilters.purchase,q=String(f.query||'').toLowerCase();const list=data.purchases.filter(x=>matchHistoryDate(x.date,f)).filter(x=>!q||[x.productName,x.item,x.sku,x.supplier,x.invoiceNumber].some(v=>String(v||'').toLowerCase().includes(q))).slice().sort((a,b)=>String(b.date).localeCompare(String(a.date)));const total=sum(list,x=>x.amount);modal(`${historyHeader('Purchase History','purchase',list.length,money(total))}<div class="history-total"><span class="muted">Filtered Purchase Value</span><b>${money(total)}</b></div>${list.map(x=>`<div class="card" style="box-shadow:none;background:#f8f8fc"><div class="row"><div><b>${esc(x.productName||x.item||'Purchase')}</b><div class="muted">${esc(x.sku||'')} • ${x.qty||0} units • ${x.date}</div></div><div class="money">${money(x.amount)}</div></div><div class="muted" style="margin-top:7px">Unit ${money(x.unitPrice||0)} + ${x.gst||0}% GST • ${esc(x.supplier||'No supplier')}</div><div class="row" style="margin-top:9px">${x.invoice?`<div class="mini-actions"><button class="secondary" onclick="viewImage('${assetUrl(x.invoice)}','${esc(x.invoice.name||'Invoice')}')">View Invoice</button><button class="secondary" onclick="shareDataUrl('${assetUrl(x.invoice)}','${esc(x.invoice.name||'Invoice')}')">Share</button></div>`:'<span class="muted">No invoice attached</span>'}</div></div>`).join('')||empty('No purchases found','Change filter or add a stock purchase')}<button class="secondary" style="width:100%" onclick="openMoreQuick()">Back</button>`) }
 
 function openExpenseHistory(){const f=historyFilters.expense;const list=data.expenses.filter(x=>matchHistoryDate(x.date,f)&&(f.category==='All'||x.category===f.category)).slice().sort((a,b)=>String(b.date).localeCompare(String(a.date)));const total=sum(list,x=>x.amount);modal(`${historyHeader('Expense History','expense',list.length,money(total))}<div class="history-total"><span class="muted">Filtered Expenses</span><b>${money(total)}</b></div>${list.map(x=>`<div class="card" style="box-shadow:none;background:#f8f8fc"><div class="row"><div><b>${esc(x.category)}</b><div class="muted">${x.date} • ${esc(x.paymentMode||'')}</div></div><div class="money">${money(x.amount)}</div></div><div class="muted" style="margin-top:6px">${esc(x.note||'')}</div>${x.invoice?`<div class="mini-actions" style="margin-top:9px"><button class="secondary" onclick="viewImage('${assetUrl(x.invoice)}','${esc(x.invoice.name||'Expense Receipt')}')">View Receipt</button><button class="secondary" onclick="shareDataUrl('${assetUrl(x.invoice)}','${esc(x.invoice.name||'Expense Receipt')}')">Share</button></div>`:''}</div>`).join('')||empty('No expenses found','Change filter or add business expenses')}<button class="secondary" style="width:100%" onclick="openMoreQuick()">Back</button>`) }
 
@@ -869,7 +998,7 @@ function openClaims(){modal(`<h3>Claims</h3>${data.claims.slice().reverse().map(
 function openMoreQuick(){modal(`<h3>More</h3><div class="menu-grid"><button class="menu-tile" onclick="openBusinessSummary()">${appIcon('chart')}<b>Business Summary</b><span>Charts, trends & comparisons</span></button><button class="menu-tile" onclick="openDocuments()">${appIcon('folder')}<b>Business Documents</b><span>GST, PAN, FSSAI and more</span></button><button class="menu-tile" onclick="openBackupMenu()">${appIcon('cloud')}<b>Backup & Sync</b><span>Cloud + local backup</span></button></div><button class="secondary" style="width:100%;margin-top:12px" onclick="closeModal()">Close</button>`)}
 function openBackupMenu(){modal(`<h3>Backup & Data</h3><div class="form"><button class="primary" onclick="exportData()">Export JSON Backup</button><label class="secondary" style="display:block;text-align:center;padding:13px;border-radius:16px;cursor:pointer">Import Backup<input type="file" accept="application/json" hidden onchange="importData(event)"></label><div class="smallnote">Data local device पर भी save रहता है और login होने पर Supabase Cloud में automatically sync होता है.</div><button class="secondary" onclick="openMoreQuick()">Back</button></div>`)}
 function openHomeAddMenu(){modal(`<h3>Add Entry</h3><div class="quick" style="grid-template-columns:repeat(2,1fr)"><button class="qbtn" onclick="openDispatchPlatformModal()"><div class="qico"><span class="ui-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 6h11v10H3z"/><path d="M14 10h4l3 3v3h-7z"/><circle cx="7" cy="18" r="2"/><circle cx="18" cy="18" r="2"/></svg></span></div><span>Dispatch</span></button><button class="qbtn" onclick="openReturnCountModal()"><div class="qico"><span class="ui-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v6h6"/></svg></span></div><span>Return / RTO</span></button><button class="qbtn" onclick="openPaymentModal()"><div class="qico"><span class="ui-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 7h15a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h13"/><path d="M16 13h5"/><circle cx="16" cy="13" r="1"/></svg></span></div><span>Payment</span></button><button class="qbtn" onclick="openPurchaseModal()"><div class="qico">${appIcon('cart')}</div><span>Stock Purchase</span></button><button class="qbtn" onclick="openExpenseModal()"><div class="qico"><span class="ui-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2z"/><path d="M9 8h6M9 12h6M9 16h3"/></svg></span></div><span>Expense</span></button><button class="qbtn" onclick="switchPage('inventory');closeModal()"><div class="qico">${appIcon('inventory')}</div><span>Inventory</span></button></div>`)}
-function exportData(){const blob=new Blob([JSON.stringify({app:'BIXNOII',version:'5.3',exportedAt:new Date().toISOString(),data},null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='bixnoii-backup-'+todayISO()+'.json';a.click();URL.revokeObjectURL(a.href);toast('Backup exported')}
+function exportData(){const blob=new Blob([JSON.stringify({app:'BIXNOII',version:'5.4',exportedAt:new Date().toISOString(),data},null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='bixnoii-backup-'+todayISO()+'.json';a.click();URL.revokeObjectURL(a.href);toast('Backup exported')}
 function importData(e){const f=e.target.files?.[0];if(!f)return;const r=new FileReader();r.onload=()=>{try{const obj=JSON.parse(r.result);data=normalize(obj.data||obj);ensureDailyBackfill();save();closeModal();toast('Backup imported')}catch(err){toast('Invalid backup file')}};r.readAsText(f)}
 function toast(t){const el=$('toast');el.textContent=t;el.classList.remove('hidden');clearTimeout(window._tt);window._tt=setTimeout(()=>el.classList.add('hidden'),2300)}
 bootCloud();
