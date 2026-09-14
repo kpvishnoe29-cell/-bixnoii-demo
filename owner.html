@@ -167,7 +167,7 @@ async function openTicketAdmin(id){
   currentTicket=data;const t=data.ticket||{},msgs=data.messages||[];
   $('modalRoot').innerHTML=`<div class="overlay" onclick="if(event.target===this)closeModal()"><div class="modal">
     <div class="modal-head"><div><h2>${esc(t.ticket_no||('Ticket '+t.id))}</h2><p>UID ${esc(data.uid)} • ${esc(data.business_name||'BIXNOII')} • ${esc(data.email||'')}</p></div><button class="close" onclick="closeModal()">×</button></div>
-    <div class="details">${line('Category',t.category)}${line('Subject',t.subject)}${line('Status',t.status)}${line('Priority',t.priority)}${line('Created',fmt(t.created_at))}${line('Updated',fmt(t.updated_at))}${line('Support Access',data.support_access_until&&new Date(data.support_access_until)>new Date()?'Granted until '+fmt(data.support_access_until):'Not granted')}</div>
+    <div class="details">${line('Category',t.category)}${line('Subject',t.subject)}${line('Status',t.status)}${line('Priority',t.priority)}${line('Created',fmt(t.created_at))}${line('Updated',fmt(t.updated_at))}${line('Support Access','Automatic while ticket is Open/Waiting')}</div>
     <div class="section"><h3>Conversation</h3>${msgs.map(m=>`<div class="audit-row" style="background:${m.sender_type==='admin'?'#f3f0ff':'#fafafd'};border:1px solid #eceaf3;border-radius:12px;margin-bottom:8px"><b>${m.sender_type==='admin'?'Admin':'Customer'}</b><span>${esc(fmt(m.created_at))}</span><div style="margin-top:6px;font-size:11px;line-height:1.5">${esc(m.message)}</div></div>`).join('')}</div>
     <div class="manage-grid"><div class="field"><label>Status</label><select id="tkAdminStatus">${['open','waiting','resolved','closed'].map(v=>`<option value="${v}" ${t.status===v?'selected':''}>${v}</option>`).join('')}</select></div>
     <div class="field"><label>Priority</label><select id="tkAdminPriority">${['low','normal','high','urgent'].map(v=>`<option value="${v}" ${t.priority===v?'selected':''}>${v}</option>`).join('')}</select></div></div>
@@ -215,7 +215,7 @@ function renderCustomerModal(x,audit){
     <div class="modal-head"><div><h2>${esc(x.business_name||'Customer')}</h2><p>${esc(x.owner_name||'Owner name not added')}</p></div><button class="close" onclick="closeModal()">×</button></div>
     <div class="uid-hero"><div><span>CUSTOMER UID</span><b>${esc(x.uid)}</b></div><div class="hero-badges">${badge(x.account_status)}${badge(x.plan_name||'Free')}${badge(x.support_status||'none')}</div></div>
     <div class="details">
-      ${line('Email',x.email||'Not added')}${line('Mobile',x.phone||'Not added')}${line('Account Created',fmt(x.created_at))}${line('Last Login',fmt(x.last_sign_in_at))}${line('Last Cloud Sync',fmt(x.last_sync_at))}${line('Support Access',x.support_access_until&&new Date(x.support_access_until)>new Date()?'Granted until '+fmt(x.support_access_until):'Not granted')}${line('Data Health',x.last_sync_at?(daysAgo(x.last_sync_at)<=1?'Healthy':daysAgo(x.last_sync_at)<=7?'Stale':'Needs attention'):'No cloud sync')}${line('App Version',x.app_version||'Not reported')}${line('Last Seen',fmt(x.last_seen_at))}${line('Device',x.last_client_info?.platform||'Not reported')}
+      ${line('Email',x.email||'Not added')}${line('Mobile',x.phone||'Not added')}${line('Account Created',fmt(x.created_at))}${line('Last Login',fmt(x.last_sign_in_at))}${line('Last Cloud Sync',fmt(x.last_sync_at))}${line('Support Access',Number(x.active_ticket_count||0)>0?'Automatic • '+x.active_ticket_count+' active ticket(s)':'No active support ticket')}${line('Data Health',x.last_sync_at?(daysAgo(x.last_sync_at)<=1?'Healthy':daysAgo(x.last_sync_at)<=7?'Stale':'Needs attention'):'No cloud sync')}${line('App Version',x.app_version||'Not reported')}${line('Last Seen',fmt(x.last_seen_at))}${line('Device',x.last_client_info?.platform||'Not reported')}
     </div>
     <div class="usage">${usage('Products',st.products)}${usage('Dispatches',st.dispatches)}${usage('Returns / RTO',st.returns)}${usage('Payments',st.payments)}${usage('Expenses',st.expenses)}${usage('Purchases',st.purchases)}${usage('Documents',st.documents)}</div>
 
@@ -237,7 +237,7 @@ function renderCustomerModal(x,audit){
       <button class="btn primary" onclick="saveCustomerAdmin()">Save Changes</button>
       <button class="btn secondary" onclick="copyText('${esc(x.uid)}','UID copied')">Copy UID</button>
       <button class="btn secondary" onclick="copyText('${esc(x.email||'')}','Email copied')">Copy Email</button>
-      <button class="btn secondary" onclick="sendCustomerReset()">Send Password Reset</button><button class="btn secondary" onclick="openSupportView(${Number(x.uid)})">Open Support View</button>
+      <button class="btn secondary" onclick="sendCustomerReset()">Send Password Reset</button><button class="btn secondary" onclick="openSupportView(${Number(x.uid)})">Open Ticket Support View</button>
     </div>
 
     <div class="section"><h3>Admin Audit History</h3><div class="audit">${audit.length?audit.map(a=>`<div class="audit-row"><b>${esc(a.action)}</b><span>${esc(fmt(a.created_at))} • ${esc(a.admin_email||'admin')}</span></div>`).join(''):'<div class="audit-row"><span>No admin actions yet.</span></div>'}</div></div>
@@ -255,7 +255,7 @@ async function openSupportView(uid){
   if(error){alert(error.message);return}
   const d=data?.data||{},products=d.products||[],dispatches=(d.dispatches||[]).slice().reverse().slice(0,8),payments=(d.payments||[]).slice().reverse().slice(0,8),returns=(d.returns||[]).slice().reverse().slice(0,8);
   $('modalRoot').innerHTML=`<div class="overlay" onclick="if(event.target===this)closeModal()"><div class="modal">
-    <div class="modal-head"><div><h2>Read-only Support View</h2><p>UID ${esc(uid)} • Access until ${esc(fmt(data.access_until))}</p></div><button class="close" onclick="closeModal()">×</button></div>
+    <div class="modal-head"><div><h2>Read-only Support View</h2><p>UID ${esc(uid)} • Ticket-based read-only access</p></div><button class="close" onclick="closeModal()">×</button></div>
     <div class="usage">${usage('Products',products.length)}${usage('Dispatches',(d.dispatches||[]).length)}${usage('Payments',(d.payments||[]).length)}${usage('Returns / RTO',(d.returns||[]).length)}${usage('Expenses',(d.expenses||[]).length)}${usage('Purchases',(d.purchases||[]).length)}</div>
     <div class="section"><h3>Products</h3>${products.slice(0,10).map(p=>`<div class="audit-row"><b>${esc(p.name||p.sku||'Product')}</b><span>SKU ${esc(p.sku||'—')} • Stock ${Number(p.stock||0)}</span></div>`).join('')||'<div class="audit-row"><span>No products.</span></div>'}</div>
     <div class="section"><h3>Recent Dispatches</h3>${dispatches.map(x=>`<div class="audit-row"><b>${esc(x.platform||'Dispatch')}</b><span>${esc(x.date||'')} • ${(x.items||[]).reduce((a,b)=>a+Number(b.qty||0),0)} units</span></div>`).join('')||'<div class="audit-row"><span>No dispatches.</span></div>'}</div>
