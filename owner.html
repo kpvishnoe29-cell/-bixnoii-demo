@@ -65,7 +65,7 @@
   <main class="main">
     <div class="top">
       <div><h1>Customer Management</h1><p>Accounts, support, plans, sync health and activity.</p></div>
-      <div class="top-actions"><span class="status"><i class="dot"></i> Secure Admin</span><button class="btn secondary" onclick="exportCSV()">Export CSV</button><button class="btn secondary" onclick="loadCustomers()">Refresh</button></div>
+      <div class="top-actions"><span class="status"><i class="dot"></i> Secure Admin</span><button class="btn secondary" onclick="openOwnerSecurity()">Security</button><button class="btn secondary" onclick="exportCSV()">Export CSV</button><button class="btn secondary" onclick="loadCustomers()">Refresh</button></div>
     </div>
 
     <section class="stats">
@@ -134,9 +134,10 @@ async function logout(){await sb.auth.signOut();location.reload()}
 
 async function start(){
   if(!currentUser)return;
+  if(!(await ensureOwnerMFA()))return;
   const {data:role,error}=await sb.rpc('current_admin_role');
   if(error||!role){await sb.auth.signOut();currentUser=null;$('loginGate').classList.remove('hidden');msg('This account does not have Owner Panel access.');return}
-  currentRole=role;$('ownerEmail').textContent=currentUser.email||'Owner';$('ownerRole').textContent=String(role).toUpperCase();$('loginGate').classList.add('hidden');await Promise.all([loadCustomers(),loadTickets()])
+  currentRole=role;$('ownerEmail').textContent=currentUser.email||'Owner';$('ownerRole').textContent=String(role).toUpperCase();$('loginGate').classList.add('hidden');armOwnerSessionTimeout();await Promise.all([loadCustomers(),loadTickets()])
 }
 async function loadCustomers(){
   const {data,error}=await sb.rpc('owner_customer_list');
@@ -236,7 +237,7 @@ function renderCustomerModal(x,audit){
       <button class="btn primary" onclick="saveCustomerAdmin()">Save Changes</button>
       <button class="btn secondary" onclick="copyText('${esc(x.uid)}','UID copied')">Copy UID</button>
       <button class="btn secondary" onclick="copyText('${esc(x.email||'')}','Email copied')">Copy Email</button>
-      <button class="btn secondary" onclick="sendCustomerReset()">Send Password Reset</button>
+      <button class="btn secondary" onclick="sendCustomerReset()">Send Password Reset</button><button class="btn secondary" onclick="openSupportView(${Number(x.uid)})">Open Support View</button>
     </div>
 
     <div class="section"><h3>Admin Audit History</h3><div class="audit">${audit.length?audit.map(a=>`<div class="audit-row"><b>${esc(a.action)}</b><span>${esc(fmt(a.created_at))} • ${esc(a.admin_email||'admin')}</span></div>`).join(''):'<div class="audit-row"><span>No admin actions yet.</span></div>'}</div></div>
@@ -244,9 +245,24 @@ function renderCustomerModal(x,audit){
 }
 async function saveCustomerAdmin(){
   if(!currentCustomer)return;
+  if(!confirm('Save admin changes for UID '+currentCustomer.uid+'?'))return;
   const payload={p_uid:Number(currentCustomer.uid),p_account_status:currentRole==='owner'?$('mAccount').value:null,p_plan_name:currentRole==='owner'?$('mPlan').value:null,p_subscription_status:currentRole==='owner'?$('mSub').value:null,p_support_note:$('mNote').value,p_support_status:$('mSupport').value,p_priority:$('mPriority').value,p_subscription_start:currentRole==='owner'?($('mSubStart')?.value||null):null,p_subscription_end:currentRole==='owner'?($('mSubEnd')?.value||null):null,p_renewal_date:currentRole==='owner'?($('mRenewal')?.value||null):null,p_billing_cycle:currentRole==='owner'?($('mBilling')?.value||null):null,p_subscription_amount:currentRole==='owner'?Number($('mAmount')?.value||0):null};
   const {data,error}=await sb.rpc('owner_update_customer',payload);if(error){alert(error.message);return}
   toast('Customer updated');await loadCustomers();await openCustomer(currentCustomer.uid)
+}
+async function openSupportView(uid){
+  const {data,error}=await sb.rpc('owner_support_view',{p_uid:Number(uid)});
+  if(error){alert(error.message);return}
+  const d=data?.data||{},products=d.products||[],dispatches=(d.dispatches||[]).slice().reverse().slice(0,8),payments=(d.payments||[]).slice().reverse().slice(0,8),returns=(d.returns||[]).slice().reverse().slice(0,8);
+  $('modalRoot').innerHTML=`<div class="overlay" onclick="if(event.target===this)closeModal()"><div class="modal">
+    <div class="modal-head"><div><h2>Read-only Support View</h2><p>UID ${esc(uid)} • Access until ${esc(fmt(data.access_until))}</p></div><button class="close" onclick="closeModal()">×</button></div>
+    <div class="usage">${usage('Products',products.length)}${usage('Dispatches',(d.dispatches||[]).length)}${usage('Payments',(d.payments||[]).length)}${usage('Returns / RTO',(d.returns||[]).length)}${usage('Expenses',(d.expenses||[]).length)}${usage('Purchases',(d.purchases||[]).length)}</div>
+    <div class="section"><h3>Products</h3>${products.slice(0,10).map(p=>`<div class="audit-row"><b>${esc(p.name||p.sku||'Product')}</b><span>SKU ${esc(p.sku||'—')} • Stock ${Number(p.stock||0)}</span></div>`).join('')||'<div class="audit-row"><span>No products.</span></div>'}</div>
+    <div class="section"><h3>Recent Dispatches</h3>${dispatches.map(x=>`<div class="audit-row"><b>${esc(x.platform||'Dispatch')}</b><span>${esc(x.date||'')} • ${(x.items||[]).reduce((a,b)=>a+Number(b.qty||0),0)} units</span></div>`).join('')||'<div class="audit-row"><span>No dispatches.</span></div>'}</div>
+    <div class="section"><h3>Recent Payments</h3>${payments.map(x=>`<div class="audit-row"><b>${esc(x.platform||'Payment')} • ₹${Number(x.amount||0).toLocaleString('en-IN')}</b><span>${esc(x.date||'')} ${x.ref?'• '+esc(x.ref):''}</span></div>`).join('')||'<div class="audit-row"><span>No payments.</span></div>'}</div>
+    <div class="section"><h3>Recent Returns / RTO</h3>${returns.map(x=>`<div class="audit-row"><b>${esc(x.platform||'')} • ${esc(x.type||'Return/RTO')}</b><span>${esc(x.date||x.receivedDate||'')}</span></div>`).join('')||'<div class="audit-row"><span>No returns.</span></div>'}</div>
+    <button class="secondary" style="width:100%;margin-top:14px" onclick="openCustomer(${Number(uid)})">Back to Customer</button>
+  </div></div>`;
 }
 async function sendCustomerReset(){
   if(!currentCustomer?.email)return;
@@ -265,6 +281,56 @@ function line(k,v){return '<div class="line"><span>'+esc(k)+'</span><b>'+esc(v)+
 function usage(k,v){return '<div><span>'+esc(k)+'</span><b>'+Number(v||0)+'</b></div>'}
 function closeModal(){$('modalRoot').innerHTML='';currentCustomer=null;currentTicket=null}
 
+let ownerTimeoutTimer=null,ownerMfaFactorId=null;
+function armOwnerSessionTimeout(){
+  clearTimeout(ownerTimeoutTimer);
+  ownerTimeoutTimer=setTimeout(async()=>{if(currentUser){await sb.auth.signOut();alert('Owner session expired after 30 minutes of inactivity.');location.reload()}},30*60*1000);
+}
+['click','keydown','touchstart','mousemove'].forEach(ev=>document.addEventListener(ev,()=>{if(currentUser)armOwnerSessionTimeout()},{passive:true}));
+async function ensureOwnerMFA(){
+  const {data,error}=await sb.auth.mfa.getAuthenticatorAssuranceLevel();
+  if(error)return true;
+  if(data?.nextLevel==='aal2'&&data?.currentLevel!=='aal2'){
+    const {data:factors,error:fe}=await sb.auth.mfa.listFactors();
+    const factor=factors?.totp?.find(x=>x.status==='verified')||factors?.totp?.[0];
+    if(fe||!factor)return true;
+    ownerMfaFactorId=factor.id;
+    $('loginGate').classList.add('hidden');
+    $('modalRoot').innerHTML=`<div class="overlay"><div class="modal" style="width:min(430px,100%)"><div class="modal-head"><div><h2>Two-Factor Verification</h2><p>Enter the 6-digit code from your authenticator app.</p></div></div><div class="field"><label>Authenticator Code</label><input id="mfaLoginCode" inputmode="numeric" maxlength="6" placeholder="123456"></div><button class="btn primary" style="width:100%;margin-top:10px" onclick="verifyOwnerMFA()">Verify & Continue</button><div id="mfaLoginMsg"></div></div></div>`;
+    return false;
+  }
+  return true;
+}
+async function verifyOwnerMFA(){
+  const code=$('mfaLoginCode').value.trim();
+  const ch=await sb.auth.mfa.challenge({factorId:ownerMfaFactorId});if(ch.error){$('mfaLoginMsg').innerHTML='<div class="msg">'+esc(ch.error.message)+'</div>';return}
+  const vr=await sb.auth.mfa.verify({factorId:ownerMfaFactorId,challengeId:ch.data.id,code});if(vr.error){$('mfaLoginMsg').innerHTML='<div class="msg">'+esc(vr.error.message)+'</div>';return}
+  closeModal();await start()
+}
+async function openOwnerSecurity(){
+  const {data:factors}=await sb.auth.mfa.listFactors();
+  const verified=(factors?.totp||[]).find(x=>x.status==='verified');
+  if(verified){
+    modalSecurity(`<h2>Owner Security</h2><div class="details">${line('Two-Factor Authentication','Enabled')}${line('Session Timeout','30 minutes inactivity')}</div><div class="actions"><button class="btn secondary" onclick="closeModal()">Close</button><button class="btn danger" onclick="disableOwnerMFA('${esc(verified.id)}')">Disable 2FA</button></div>`);
+  }else{
+    const {data,error}=await sb.auth.mfa.enroll({factorType:'totp',friendlyName:'BIXNOII Owner'});
+    if(error){alert(error.message);return}
+    ownerMfaFactorId=data.id;
+    modalSecurity(`<h2>Enable Two-Factor Authentication</h2><p class="muted">Scan this QR code in Google Authenticator, Microsoft Authenticator, 1Password, Authy, or another TOTP app.</p><div style="text-align:center;margin:14px 0"><img src="${data.totp.qr_code}" style="width:210px;max-width:100%;border-radius:14px;background:#fff;padding:8px;border:1px solid #eee"></div><div class="field"><label>Secret (backup)</label><input value="${esc(data.totp.secret||'')}" readonly></div><div class="field"><label>6-digit code</label><input id="mfaEnrollCode" inputmode="numeric" maxlength="6"></div><div class="actions"><button class="btn secondary" onclick="closeModal()">Cancel</button><button class="btn primary" onclick="verifyOwnerMFAEnrollment()">Enable 2FA</button></div><div id="mfaEnrollMsg"></div>`);
+  }
+}
+function modalSecurity(inner){$('modalRoot').innerHTML='<div class="overlay" onclick="if(event.target===this)closeModal()"><div class="modal" style="width:min(500px,100%)">'+inner+'</div></div>'}
+async function verifyOwnerMFAEnrollment(){
+  const code=$('mfaEnrollCode').value.trim();const ch=await sb.auth.mfa.challenge({factorId:ownerMfaFactorId});
+  if(ch.error){$('mfaEnrollMsg').innerHTML='<div class="msg">'+esc(ch.error.message)+'</div>';return}
+  const vr=await sb.auth.mfa.verify({factorId:ownerMfaFactorId,challengeId:ch.data.id,code});
+  if(vr.error){$('mfaEnrollMsg').innerHTML='<div class="msg">'+esc(vr.error.message)+'</div>';return}
+  toast('2FA enabled');closeModal()
+}
+async function disableOwnerMFA(id){
+  if(!confirm('Disable two-factor authentication for this Owner account?'))return;
+  const {error}=await sb.auth.mfa.unenroll({factorId:id});if(error){alert(error.message);return}toast('2FA disabled');closeModal()
+}
 sb.auth.onAuthStateChange(async(event,session)=>{if(event==='PASSWORD_RECOVERY'){currentUser=session?.user||null;showNewPasswordForm()}});
 (async()=>{const {data}=await sb.auth.getSession();const recovery=location.hash.includes('type=recovery')||location.search.includes('type=recovery');if(recovery&&data?.session?.user){currentUser=data.session.user;showNewPasswordForm();return}if(data?.session?.user){currentUser=data.session.user;await start()}})();
 </script>
