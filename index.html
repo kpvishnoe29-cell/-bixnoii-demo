@@ -294,6 +294,7 @@ let raw=localStorage.getItem(LS_KEY)||localStorage.getItem('bixnoii_v2');
 let data=normalize(raw?JSON.parse(raw):seed);
 function save(){localStorage.setItem(LS_KEY,JSON.stringify(data));renderAll();scheduleCloudSave()}
 
+const APP_VERSION='5.0';
 const SUPABASE_URL='https://tducbuscraurojyewliy.supabase.co';
 const SUPABASE_KEY='sb_publishable_BgTE00AlTNV39wm4JBto0g_q2doc1wk';
 const sb=window.supabase?.createClient(SUPABASE_URL,SUPABASE_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
@@ -352,10 +353,10 @@ async function syncCloudProfileMeta(pushLocal=true){
       const {error:updateError}=await sb.from('profiles').update(payload).eq('id',cloudUser.id);
       if(updateError)throw updateError;
     }
-    const {data:p,error}=await sb.from('profiles').select('uid,account_status,business_name,owner_name,phone,email').eq('id',cloudUser.id).single();
+    const {data:p,error}=await sb.from('profiles').select('uid,account_status,business_name,owner_name,phone,email,plan_name,subscription_status').eq('id',cloudUser.id).single();
     if(error)throw error;
     data.profile.uid=p.uid||null;
-    data.profile.accountStatus=p.account_status||'active';
+    data.profile.accountStatus=p.account_status||'active';data.profile.planName=p.plan_name||'Free';data.profile.subscriptionStatus=p.subscription_status||'active';
     if(!data.profile.businessName)data.profile.businessName=p.business_name||'BIXNOII';
     if(!data.profile.ownerName)data.profile.ownerName=p.owner_name||'';
     if(!data.profile.phone)data.profile.phone=p.phone||'';
@@ -372,12 +373,20 @@ async function syncCloudProfileMeta(pushLocal=true){
     renderAll();
   }catch(e){console.warn('Profile identity sync failed',e)}
 }
+async function sendDiagnosticsHeartbeat(){
+  if(!sb||!cloudUser)return;
+  try{
+    const info={userAgent:navigator.userAgent||'',platform:navigator.platform||'',language:navigator.language||'',online:navigator.onLine!==false,screen:(window.screen?.width||0)+'x'+(window.screen?.height||0)};
+    await sb.rpc('customer_diagnostics_heartbeat',{p_app_version:APP_VERSION,p_client_info:info});
+  }catch(e){}
+}
 async function enterCloud(user){
   if(!user)return showAuthGate();
   cloudUser=user;hideAuthGate();updateCloudStatus('saving');
   if(data.profile&&!data.profile.email)data.profile.email=user.email||'';
   await loadCloudState();
   await syncCloudProfileMeta(true);
+  await sendDiagnosticsHeartbeat();
   startCloudPolling();
 }
 async function loadCloudState(){
@@ -709,16 +718,89 @@ async function shareDataUrl(src,title='Document'){try{if(window.AndroidShare?.sh
 function viewImage(dataUrl,title){modal(`<h3>${esc(title)}</h3><img src="${dataUrl}" style="width:100%;max-height:70vh;object-fit:contain;border-radius:18px"><div class="actions"><button class="secondary" onclick="closeModal()">Close</button><button class="primary" onclick="shareDataUrl('${dataUrl}','${esc(title)}')">${appIcon('share')} Share</button></div>`) }
 function compressDataUrl(src,maxW=1000,quality=.72){return new Promise(res=>{const img=new Image();img.onload=()=>{const scale=Math.min(1,maxW/img.width);const c=document.createElement('canvas');c.width=Math.round(img.width*scale);c.height=Math.round(img.height*scale);c.getContext('2d').drawImage(img,0,0,c.width,c.height);res(c.toDataURL('image/jpeg',quality))};img.onerror=()=>res(src);img.src=src})}
 let pendingProfilePhoto=null;
-function openProfile(){const p=data.profile||{};modal(`<div class="profile-head"><div class="profile-avatar-large">${p.photo?`<img src="${assetUrl(p.photo)}">`:appIcon('user')}</div><div><h3 style="margin:0">${esc(p.ownerName||'Your Profile')}</h3><div class="muted">${esc(p.businessName||'BIXNOII Business')}</div></div></div><div class="profile-info"><div><span>${appIcon('idcard')} UID</span><b>${esc(p.uid||'Loading…')}</b></div><div><span>${appIcon('phone')} Mobile</span><b>${esc(p.phone||'Not added')}</b></div><div><span>${appIcon('mail')} Email</span><b>${esc(p.email||'Not added')}</b></div><div><span>${appIcon('building')} Business</span><b>${esc(p.businessName||'Not added')}</b></div></div><div class="actions"><button class="secondary" onclick="closeModal()">Close</button><button class="primary" onclick="openEditProfile()">Edit Profile</button></div>`)}
+function openProfile(){const p=data.profile||{};modal(`<div class="profile-head"><div class="profile-avatar-large">${p.photo?`<img src="${assetUrl(p.photo)}">`:appIcon('user')}</div><div><h3 style="margin:0">${esc(p.ownerName||'Your Profile')}</h3><div class="muted">${esc(p.businessName||'BIXNOII Business')}</div></div></div><div class="profile-info"><div><span>${appIcon('idcard')} UID</span><b>${esc(p.uid||'Loading…')}</b></div><div><span>${appIcon('phone')} Mobile</span><b>${esc(p.phone||'Not added')}</b></div><div><span>${appIcon('mail')} Email</span><b>${esc(p.email||'Not added')}</b></div><div><span>${appIcon('building')} Business</span><b>${esc(p.businessName||'Not added')}</b></div></div><div class="actions"><button class="secondary" onclick="openAccountCenter()">Account & Plan</button><button class="secondary" onclick="openHelpCenter()">Help & Support</button></div><div class="actions"><button class="secondary" onclick="closeModal()">Close</button><button class="primary" onclick="openEditProfile()">Edit Profile</button></div>`)}
 function openEditProfile(){pendingProfilePhoto=null;const p=data.profile||{};modal(`<h3>Edit Profile</h3><div class="form"><div class="profile-photo-edit"><div id="profilePhotoPreview" class="profile-avatar-large">${p.photo?`<img src="${assetUrl(p.photo)}">`:appIcon('user')}</div><div style="flex:1"><label class="secondary profile-upload">${appIcon('camera')} Camera<input type="file" accept="image/*" capture="environment" hidden onchange="stageProfilePhoto(event)"></label><label class="primary profile-upload">${appIcon('gallery')} Gallery<input type="file" accept="image/*" hidden onchange="stageProfilePhoto(event)"></label></div></div><div class="field"><label>Business / Profile Name (shown at top)</label><input id="prof_business" value="${esc(p.businessName||'')}" placeholder="e.g. KP Enterprises"></div><div class="field"><label>Owner / Profile Name</label><input id="prof_owner" value="${esc(p.ownerName||'')}" placeholder="Your name"></div><div class="field"><label>Mobile Number</label><input id="prof_phone" type="tel" inputmode="numeric" value="${esc(p.phone||'')}" placeholder="10-digit mobile number"></div><div class="field"><label>Email Address</label><input id="prof_email" type="email" value="${esc(p.email||'')}" placeholder="name@example.com"></div><div class="actions"><button class="secondary" onclick="openProfile()">Cancel</button><button class="primary" onclick="saveProfile()">Save Profile</button></div></div>`)}
 async function stageProfilePhoto(e){const f=e.target.files?.[0];if(!f)return;pendingProfilePhoto=await prepareFileAsset(f,'profile',true);const el=$('profilePhotoPreview');if(el)el.innerHTML=`<img src="${assetUrl(pendingProfilePhoto)}">`}
 async function saveProfile(){const email=$('prof_email').value.trim(),phone=$('prof_phone').value.trim();if(email&&!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){toast('Enter a valid email');return}if(phone&&phone.replace(/\D/g,'').length<10){toast('Enter a valid mobile number');return}const old=data.profile||{};data.profile={businessName:$('prof_business').value.trim(),ownerName:$('prof_owner').value.trim(),phone,email,photo:pendingProfilePhoto||old.photo||'',uid:old.uid||null,accountStatus:old.accountStatus||'active'};pendingProfilePhoto=null;save();await syncCloudProfileMeta(true);openProfile();toast('Profile updated')}
+let pendingSupportAttachment=null;
+async function openAccountCenter(){
+  if(!sb||!cloudUser)return;
+  modal('<h3>Account & Plan</h3><div class="card"><div class="muted">Loading account details…</div></div>');
+  const {data:x,error}=await sb.rpc('customer_account_summary');
+  if(error){toast('Unable to load account');return}
+  const access=x?.support_access_until&&new Date(x.support_access_until)>new Date()?('Granted until '+new Date(x.support_access_until).toLocaleString('en-IN')):'Not granted';
+  modal(`<h3>Account & Plan</h3><div class="profile-info">
+    <div><span>UID</span><b>${esc(x?.uid||'—')}</b></div>
+    <div><span>Account Status</span><b>${esc(x?.account_status||'active')}</b></div>
+    <div><span>Current Plan</span><b>${esc(x?.plan_name||'Free')}</b></div>
+    <div><span>Subscription</span><b>${esc(x?.subscription_status||'active')}</b></div>
+    <div><span>Start Date</span><b>${esc(x?.subscription_start||'—')}</b></div>
+    <div><span>End Date</span><b>${esc(x?.subscription_end||'—')}</b></div>
+    <div><span>Renewal Date</span><b>${esc(x?.renewal_date||'—')}</b></div>
+    <div><span>Billing Cycle</span><b>${esc(x?.billing_cycle||'—')}</b></div>
+    <div><span>Support Access</span><b>${esc(access)}</b></div>
+    <div><span>App Version</span><b>${APP_VERSION}</b></div>
+    <div><span>Last Cloud Sync</span><b>${x?.last_sync_at?new Date(x.last_sync_at).toLocaleString('en-IN'):'Never'}</b></div>
+  </div>
+  <div class="section-title"><h3>Support Access Permission</h3></div>
+  <div class="smallnote">Support access is temporary and should only be enabled when you want BIXNOII support to troubleshoot your account.</div>
+  <div class="actions"><button class="secondary" onclick="setSupportAccess(30)">Allow 30 min</button><button class="secondary" onclick="setSupportAccess(1440)">Allow 24 hours</button><button class="danger" onclick="setSupportAccess(0)">Revoke</button></div>
+  <div class="section-title"><h3>Security</h3></div>
+  <div class="actions"><button class="secondary" onclick="openChangePassword()">Change Password</button><button class="secondary" onclick="openDiagnostics()">Diagnostics</button></div>
+  <button class="secondary" style="width:100%;margin-top:12px" onclick="openProfile()">Back</button>`)
+}
+async function setSupportAccess(minutes){
+  const {error}=await sb.rpc('customer_grant_support_access',{p_minutes:Number(minutes)});
+  if(error){toast(error.message);return}
+  toast(minutes===0?'Support access revoked':'Support access granted');openAccountCenter()
+}
+function openChangePassword(){modal(`<h3>Change Password</h3><div class="form"><div class="field"><label>New Password</label><input id="cp1" type="password" autocomplete="new-password"></div><div class="field"><label>Confirm Password</label><input id="cp2" type="password" autocomplete="new-password"></div><div class="actions"><button class="secondary" onclick="openAccountCenter()">Back</button><button class="primary" onclick="saveCustomerPassword()">Update Password</button></div></div>`)}
+async function saveCustomerPassword(){const a=$('cp1').value,b=$('cp2').value;if(a.length<6){toast('Password must be at least 6 characters');return}if(a!==b){toast('Passwords do not match');return}const {error}=await sb.auth.updateUser({password:a});if(error){toast(error.message);return}toast('Password updated');openAccountCenter()}
+async function openDiagnostics(){
+  const {data:x}=await sb.rpc('customer_account_summary');
+  const info=x?.last_client_info||{};
+  modal(`<h3>Diagnostics</h3><div class="profile-info">
+    <div><span>App Version</span><b>${esc(x?.app_version||APP_VERSION)}</b></div>
+    <div><span>Last Seen</span><b>${x?.last_seen_at?new Date(x.last_seen_at).toLocaleString('en-IN'):'—'}</b></div>
+    <div><span>Last Sync</span><b>${x?.last_sync_at?new Date(x.last_sync_at).toLocaleString('en-IN'):'—'}</b></div>
+    <div><span>Online</span><b>${navigator.onLine?'Yes':'No'}</b></div>
+    <div><span>Platform</span><b>${esc(info.platform||navigator.platform||'—')}</b></div>
+    <div><span>Language</span><b>${esc(info.language||navigator.language||'—')}</b></div>
+    <div><span>Screen</span><b>${esc(info.screen||((screen.width||0)+'x'+(screen.height||0)))}</b></div>
+  </div><div class="smallnote" style="margin-top:10px">If support asks for diagnostics, share your UID and this information.</div><button class="secondary" style="width:100%;margin-top:12px" onclick="openAccountCenter()">Back</button>`)
+}
+async function openHelpCenter(){
+  modal('<h3>Help & Support</h3><div class="card"><div class="muted">Loading tickets…</div></div>');
+  const {data:list,error}=await sb.from('support_tickets').select('id,ticket_no,category,subject,status,priority,created_at,updated_at').order('updated_at',{ascending:false});
+  if(error){toast('Unable to load support tickets');return}
+  modal(`<h3>Help & Support</h3><button class="primary" style="width:100%;margin-bottom:12px" onclick="openNewTicket()">+ Create Support Ticket</button>
+    ${(list||[]).map(t=>`<button class="restock-source" onclick="openTicketDetail(${t.id})"><div><b>${esc(t.ticket_no||('Ticket '+t.id))} • ${esc(t.subject)}</b><div class="muted">${esc(t.category)} • ${new Date(t.updated_at).toLocaleString('en-IN')}</div></div><span class="pill ${t.status==='resolved'?'green':t.status==='waiting'?'amber':'blue'}">${esc(t.status)}</span></button>`).join('')||empty('No support tickets','Create a ticket if you need help')}
+    <button class="secondary" style="width:100%;margin-top:12px" onclick="openProfile()">Back</button>`)
+}
+function openNewTicket(){pendingSupportAttachment=null;modal(`<h3>Create Support Ticket</h3><div class="form">
+  <div class="field"><label>Category</label><select id="tkCat"><option>Login / Account</option><option>Cloud Sync</option><option>Orders</option><option>Returns / RTO</option><option>Payments</option><option>Inventory</option><option>Subscription</option><option>Other</option></select></div>
+  <div class="field"><label>Subject</label><input id="tkSub" placeholder="Short issue title"></div>
+  <div class="field"><label>Describe the problem</label><textarea id="tkDesc" placeholder="What happened, what you expected, and any error message"></textarea></div>
+  <div class="attachbox"><b>Screenshot (optional)</b><div class="mini-actions" style="margin-top:8px"><label class="secondary" style="padding:9px 12px;border-radius:11px;cursor:pointer">Choose Image<input type="file" accept="image/*" hidden onchange="stageSupportAttachment(event)"></label></div><div id="tkAttachStatus" class="attachstatus"></div></div>
+  <div class="actions"><button class="secondary" onclick="openHelpCenter()">Cancel</button><button class="primary" onclick="createSupportTicket()">Submit Ticket</button></div>
+</div>`)}
+async function stageSupportAttachment(e){const f=e.target.files?.[0];if(!f)return;const el=$('tkAttachStatus');if(el)el.textContent='Uploading…';try{pendingSupportAttachment=await prepareFileAsset(f,'support-tickets',true);if(el)el.textContent='Screenshot attached'}catch(err){if(el)el.textContent='Unable to attach'}}
+async function createSupportTicket(){const subject=$('tkSub').value.trim(),description=$('tkDesc').value.trim();if(!subject||!description){toast('Subject and description required');return}const {data:t,error}=await sb.rpc('customer_create_ticket',{p_category:$('tkCat').value,p_subject:subject,p_description:description,p_attachment:pendingSupportAttachment});if(error){toast(error.message);return}pendingSupportAttachment=null;toast('Support ticket created');openTicketDetail(t.id)}
+async function openTicketDetail(id){
+ const [{data:t,error},{data:msgs,error:me}]=await Promise.all([sb.from('support_tickets').select('*').eq('id',id).single(),sb.from('support_messages').select('id,sender_type,message,created_at').eq('ticket_id',id).order('created_at',{ascending:true})]);
+ if(error||me){toast('Unable to open ticket');return}
+ modal(`<h3>${esc(t.ticket_no||('Ticket '+t.id))}</h3><div class="profile-info"><div><span>Subject</span><b>${esc(t.subject)}</b></div><div><span>Status</span><b>${esc(t.status)}</b></div><div><span>Priority</span><b>${esc(t.priority)}</b></div></div>
+ <div class="section-title"><h3>Conversation</h3></div>
+ ${(msgs||[]).map(m=>`<div class="card" style="box-shadow:none;background:${m.sender_type==='admin'?'#f1efff':'#fafafd'}"><div class="row"><b>${m.sender_type==='admin'?'BIXNOII Support':'You'}</b><span class="muted">${new Date(m.created_at).toLocaleString('en-IN')}</span></div><div style="margin-top:7px;font-size:12px;line-height:1.5">${esc(m.message)}</div></div>`).join('')}
+ <div class="field"><label>Reply</label><textarea id="ticketReply" placeholder="Type your reply"></textarea></div><div class="actions"><button class="secondary" onclick="openHelpCenter()">Back</button><button class="primary" onclick="replyTicket(${id})">Send Reply</button></div>`)
+}
+async function replyTicket(id){const m=$('ticketReply').value.trim();if(!m){toast('Type a reply');return}const {error}=await sb.rpc('customer_add_ticket_message',{p_ticket_id:Number(id),p_message:m});if(error){toast(error.message);return}toast('Reply sent');openTicketDetail(id)}
 function openClaims(){modal(`<h3>Claims</h3>${data.claims.slice().reverse().map(x=>`<div class="card" style="box-shadow:none;background:#f8f8fc"><div class="row"><div><b>${esc(x.platform||'Claim')}</b><div class="muted">${esc(x.note||x.status||'Pending')}</div></div><span class="pill amber">${esc(x.status||'Pending')}</span></div></div>`).join('')||empty('No claims','Claims can be tracked here')}<button class="secondary" style="width:100%" onclick="openMoreQuick()">Back</button>`)}
-function openMoreQuick(){modal(`<h3>More</h3><div class="menu-grid"><button class="menu-tile" onclick="openBusinessSummary()">${appIcon('chart')}<b>Business Summary</b><span>Charts, trends & comparisons</span></button><button class="menu-tile" onclick="openPurchaseModal()">${appIcon('cart')}<b>Stock Purchase</b><span>Add product stock + GST + invoice</span></button><button class="menu-tile" onclick="openPurchaseHistory()">${appIcon('archive')}<b>Purchase History</b><span>Month & filter enabled</span></button><button class="menu-tile" onclick="openDocuments()">${appIcon('folder')}<b>Business Documents</b><span>GST, PAN, FSSAI and more</span></button><button class="menu-tile" onclick="openInvoices()">${appIcon('file')}<b>Invoice History</b><span>Month & source filter</span></button><button class="menu-tile" onclick="openClaims()">${appIcon('claim')}<b>Claims</b><span>Claim tracking</span></button><button class="menu-tile" onclick="openBackupMenu()">${appIcon('cloud')}<b>Backup & Sync</b><span>Cloud + local backup</span></button><button class="menu-tile" onclick="logoutCloud()">${appIcon('user')}<b>Logout</b><span>${esc(cloudUser?.email||'Cloud account')}</span></button></div><button class="secondary" style="width:100%;margin-top:12px" onclick="closeModal()">Close</button>`)}
+function openMoreQuick(){modal(`<h3>More</h3><div class="menu-grid"><button class="menu-tile" onclick="openHelpCenter()">${appIcon('claim')}<b>Help & Support</b><span>Tickets, replies & troubleshooting</span></button><button class="menu-tile" onclick="openAccountCenter()">${appIcon('user')}<b>Account & Plan</b><span>Plan, security & support access</span></button><button class="menu-tile" onclick="openBusinessSummary()">${appIcon('chart')}<b>Business Summary</b><span>Charts, trends & comparisons</span></button><button class="menu-tile" onclick="openPurchaseModal()">${appIcon('cart')}<b>Stock Purchase</b><span>Add product stock + GST + invoice</span></button><button class="menu-tile" onclick="openPurchaseHistory()">${appIcon('archive')}<b>Purchase History</b><span>Month & filter enabled</span></button><button class="menu-tile" onclick="openDocuments()">${appIcon('folder')}<b>Business Documents</b><span>GST, PAN, FSSAI and more</span></button><button class="menu-tile" onclick="openInvoices()">${appIcon('file')}<b>Invoice History</b><span>Month & source filter</span></button><button class="menu-tile" onclick="openClaims()">${appIcon('claim')}<b>Claims</b><span>Claim tracking</span></button><button class="menu-tile" onclick="openBackupMenu()">${appIcon('cloud')}<b>Backup & Sync</b><span>Cloud + local backup</span></button><button class="menu-tile" onclick="logoutCloud()">${appIcon('user')}<b>Logout</b><span>${esc(cloudUser?.email||'Cloud account')}</span></button></div><button class="secondary" style="width:100%;margin-top:12px" onclick="closeModal()">Close</button>`)}
 
 function openBackupMenu(){modal(`<h3>Backup & Data</h3><div class="form"><button class="primary" onclick="exportData()">Export JSON Backup</button><label class="secondary" style="display:block;text-align:center;padding:13px;border-radius:16px;cursor:pointer">Import Backup<input type="file" accept="application/json" hidden onchange="importData(event)"></label><div class="smallnote">Data local device पर भी save रहता है और login होने पर Supabase Cloud में automatically sync होता है.</div><button class="secondary" onclick="openMoreQuick()">Back</button></div>`)}
 function openHomeAddMenu(){modal(`<h3>Add Entry</h3><div class="quick" style="grid-template-columns:repeat(2,1fr)"><button class="qbtn" onclick="openDispatchPlatformModal()"><div class="qico"><span class="ui-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 6h11v10H3z"/><path d="M14 10h4l3 3v3h-7z"/><circle cx="7" cy="18" r="2"/><circle cx="18" cy="18" r="2"/></svg></span></div><span>Dispatch</span></button><button class="qbtn" onclick="openReturnCountModal()"><div class="qico"><span class="ui-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v6h6"/></svg></span></div><span>Return / RTO</span></button><button class="qbtn" onclick="openPaymentModal()"><div class="qico"><span class="ui-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 7h15a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h13"/><path d="M16 13h5"/><circle cx="16" cy="13" r="1"/></svg></span></div><span>Payment</span></button><button class="qbtn" onclick="openPurchaseModal()"><div class="qico">${appIcon('cart')}</div><span>Stock Purchase</span></button><button class="qbtn" onclick="openExpenseModal()"><div class="qico"><span class="ui-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2z"/><path d="M9 8h6M9 12h6M9 16h3"/></svg></span></div><span>Expense</span></button><button class="qbtn" onclick="switchPage('inventory');closeModal()"><div class="qico">${appIcon('inventory')}</div><span>Inventory</span></button></div>`)}
-function exportData(){const blob=new Blob([JSON.stringify({app:'BIXNOII',version:'4.4',exportedAt:new Date().toISOString(),data},null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='bixnoii-backup-'+todayISO()+'.json';a.click();URL.revokeObjectURL(a.href);toast('Backup exported')}
+function exportData(){const blob=new Blob([JSON.stringify({app:'BIXNOII',version:'5.0',exportedAt:new Date().toISOString(),data},null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='bixnoii-backup-'+todayISO()+'.json';a.click();URL.revokeObjectURL(a.href);toast('Backup exported')}
 function importData(e){const f=e.target.files?.[0];if(!f)return;const r=new FileReader();r.onload=()=>{try{const obj=JSON.parse(r.result);data=normalize(obj.data||obj);ensureDailyBackfill();save();closeModal();toast('Backup imported')}catch(err){toast('Invalid backup file')}};r.readAsText(f)}
 function toast(t){const el=$('toast');el.textContent=t;el.classList.remove('hidden');clearTimeout(window._tt);window._tt=setTimeout(()=>el.classList.add('hidden'),2300)}
 bootCloud();
