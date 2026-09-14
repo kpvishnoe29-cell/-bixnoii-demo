@@ -90,6 +90,19 @@
         <div id="rows"></div>
       </div></div>
     </section>
+
+    <section class="panel" style="margin-top:20px">
+      <div class="panel-head"><div><h2>Support Tickets</h2><span id="ticketResultText">0 tickets</span></div></div>
+      <div class="tools" style="grid-template-columns:minmax(220px,1fr) 160px 160px">
+        <input id="ticketSearch" class="search" placeholder="Search ticket / UID / business / email..." oninput="renderTickets()">
+        <select id="ticketStatusFilter" class="select" onchange="renderTickets()"><option value="">All status</option><option value="open">Open</option><option value="waiting">Waiting</option><option value="resolved">Resolved</option><option value="closed">Closed</option></select>
+        <select id="ticketPriorityFilter" class="select" onchange="renderTickets()"><option value="">All priority</option><option value="urgent">Urgent</option><option value="high">High</option><option value="normal">Normal</option><option value="low">Low</option></select>
+      </div>
+      <div class="table-wrap"><div class="table">
+        <div class="tr head" style="grid-template-columns:120px 90px 1.2fr 1.5fr 100px 100px 130px 30px"><div>Ticket</div><div>UID</div><div>Business</div><div>Subject</div><div>Status</div><div>Priority</div><div>Updated</div><div></div></div>
+        <div id="ticketRows"></div>
+      </div></div>
+    </section>
   </main>
 </div>
 <div id="modalRoot"></div><div id="toast" class="toast hidden"></div>
@@ -101,7 +114,7 @@ const APP_URL='https://kpvishnoe29-cell.github.io/-bixnoii-demo/';
 const sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY,{auth:{persistSession:true,autoRefreshToken:true}});
 const $=id=>document.getElementById(id);
 const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));
-let customers=[],currentUser=null,currentRole=null,currentCustomer=null;
+let customers=[],tickets=[],currentUser=null,currentRole=null,currentCustomer=null,currentTicket=null;
 
 function toast(t){const el=$('toast');el.textContent=t;el.classList.remove('hidden');clearTimeout(window.__tt);window.__tt=setTimeout(()=>el.classList.add('hidden'),2200)}
 function fmt(v){if(!v)return 'Never';const d=new Date(v);return d.toLocaleString('en-IN',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'})}
@@ -123,17 +136,54 @@ async function start(){
   if(!currentUser)return;
   const {data:role,error}=await sb.rpc('current_admin_role');
   if(error||!role){await sb.auth.signOut();currentUser=null;$('loginGate').classList.remove('hidden');msg('This account does not have Owner Panel access.');return}
-  currentRole=role;$('ownerEmail').textContent=currentUser.email||'Owner';$('ownerRole').textContent=String(role).toUpperCase();$('loginGate').classList.add('hidden');await loadCustomers()
+  currentRole=role;$('ownerEmail').textContent=currentUser.email||'Owner';$('ownerRole').textContent=String(role).toUpperCase();$('loginGate').classList.add('hidden');await Promise.all([loadCustomers(),loadTickets()])
 }
 async function loadCustomers(){
   const {data,error}=await sb.rpc('owner_customer_list');
   if(error){alert('Unable to load customers: '+error.message);return}
   customers=data||[];updateStats();renderCustomers()
 }
+async function loadTickets(){
+  const {data,error}=await sb.rpc('owner_ticket_list');
+  if(error){console.warn('Unable to load tickets',error);tickets=[]}else tickets=data||[];
+  const el=$('supportCount');if(el)el.textContent=tickets.filter(x=>['open','waiting'].includes(x.status)).length;
+  renderTickets();
+}
+function renderTickets(){
+  const q=($('ticketSearch')?.value||'').trim().toLowerCase(),st=$('ticketStatusFilter')?.value||'',pr=$('ticketPriorityFilter')?.value||'';
+  const list=tickets.filter(x=>(!q||String(x.ticket_no||'').toLowerCase().includes(q)||String(x.uid||'').includes(q)||String(x.business_name||'').toLowerCase().includes(q)||String(x.email||'').toLowerCase().includes(q)||String(x.subject||'').toLowerCase().includes(q))&&(!st||x.status===st)&&(!pr||x.priority===pr));
+  if($('ticketResultText'))$('ticketResultText').textContent=list.length+' ticket'+(list.length===1?'':'s');
+  if($('ticketRows'))$('ticketRows').innerHTML=list.length?list.map(x=>`<div class="tr customer" style="grid-template-columns:120px 90px 1.2fr 1.5fr 100px 100px 130px 30px" onclick="openTicketAdmin(${Number(x.ticket_id)})">
+    <div class="uid">${esc(x.ticket_no||('T-'+x.ticket_id))}</div><div class="uid">${esc(x.uid)}</div>
+    <div class="cell"><b>${esc(x.business_name||'BIXNOII')}</b><span>${esc(x.email||'')}</span></div>
+    <div class="cell"><b>${esc(x.subject||'')}</b><span>${esc(x.category||'')}</span></div>
+    <div>${badge(x.status)}</div><div>${badge(x.priority)}</div><div class="cell"><span>${esc(fmt(x.updated_at))}</span></div><div class="arrow">›</div>
+  </div>`).join(''):'<div class="empty">No support tickets.</div>';
+}
+async function openTicketAdmin(id){
+  const {data,error}=await sb.rpc('owner_ticket_detail',{p_ticket_id:Number(id)});
+  if(error){alert('Unable to open ticket: '+error.message);return}
+  currentTicket=data;const t=data.ticket||{},msgs=data.messages||[];
+  $('modalRoot').innerHTML=`<div class="overlay" onclick="if(event.target===this)closeModal()"><div class="modal">
+    <div class="modal-head"><div><h2>${esc(t.ticket_no||('Ticket '+t.id))}</h2><p>UID ${esc(data.uid)} • ${esc(data.business_name||'BIXNOII')} • ${esc(data.email||'')}</p></div><button class="close" onclick="closeModal()">×</button></div>
+    <div class="details">${line('Category',t.category)}${line('Subject',t.subject)}${line('Status',t.status)}${line('Priority',t.priority)}${line('Created',fmt(t.created_at))}${line('Updated',fmt(t.updated_at))}${line('Support Access',data.support_access_until&&new Date(data.support_access_until)>new Date()?'Granted until '+fmt(data.support_access_until):'Not granted')}</div>
+    <div class="section"><h3>Conversation</h3>${msgs.map(m=>`<div class="audit-row" style="background:${m.sender_type==='admin'?'#f3f0ff':'#fafafd'};border:1px solid #eceaf3;border-radius:12px;margin-bottom:8px"><b>${m.sender_type==='admin'?'Admin':'Customer'}</b><span>${esc(fmt(m.created_at))}</span><div style="margin-top:6px;font-size:11px;line-height:1.5">${esc(m.message)}</div></div>`).join('')}</div>
+    <div class="manage-grid"><div class="field"><label>Status</label><select id="tkAdminStatus">${['open','waiting','resolved','closed'].map(v=>`<option value="${v}" ${t.status===v?'selected':''}>${v}</option>`).join('')}</select></div>
+    <div class="field"><label>Priority</label><select id="tkAdminPriority">${['low','normal','high','urgent'].map(v=>`<option value="${v}" ${t.priority===v?'selected':''}>${v}</option>`).join('')}</select></div></div>
+    <div class="field" style="margin-top:10px"><label>Reply</label><textarea id="tkAdminReply" placeholder="Write a support reply"></textarea></div>
+    <div class="actions"><button class="secondary" onclick="closeModal()">Close</button><button class="primary" onclick="replyTicketAdmin(${Number(t.id)})">Send Reply</button></div>
+  </div></div>`;
+}
+async function replyTicketAdmin(id){
+  const m=$('tkAdminReply').value.trim();if(!m){toast('Type a reply');return}
+  const {error}=await sb.rpc('owner_ticket_reply',{p_ticket_id:Number(id),p_message:m,p_status:$('tkAdminStatus').value,p_priority:$('tkAdminPriority').value});
+  if(error){alert(error.message);return}
+  toast('Reply sent');await Promise.all([loadTickets(),loadCustomers()]);openTicketAdmin(id)
+}
 function updateStats(){
   $('totalCount').textContent=customers.length;
   $('activeCount').textContent=customers.filter(x=>x.account_status==='active').length;
-  $('supportCount').textContent=customers.filter(x=>['open','waiting'].includes(x.support_status)).length;
+  $('supportCount').textContent=tickets.length?tickets.filter(x=>['open','waiting'].includes(x.status)).length:customers.filter(x=>['open','waiting'].includes(x.support_status)).length;
   $('syncedCount').textContent=customers.filter(x=>x.last_sync_at).length;
   $('recentCount').textContent=customers.filter(x=>daysAgo(x.last_sign_in_at)<=7).length;
 }
@@ -164,7 +214,7 @@ function renderCustomerModal(x,audit){
     <div class="modal-head"><div><h2>${esc(x.business_name||'Customer')}</h2><p>${esc(x.owner_name||'Owner name not added')}</p></div><button class="close" onclick="closeModal()">×</button></div>
     <div class="uid-hero"><div><span>CUSTOMER UID</span><b>${esc(x.uid)}</b></div><div class="hero-badges">${badge(x.account_status)}${badge(x.plan_name||'Free')}${badge(x.support_status||'none')}</div></div>
     <div class="details">
-      ${line('Email',x.email||'Not added')}${line('Mobile',x.phone||'Not added')}${line('Account Created',fmt(x.created_at))}${line('Last Login',fmt(x.last_sign_in_at))}${line('Last Cloud Sync',fmt(x.last_sync_at))}${line('Support Access',x.support_access_until&&new Date(x.support_access_until)>new Date()?'Granted until '+fmt(x.support_access_until):'Not granted')}${line('Data Health',x.last_sync_at?(daysAgo(x.last_sync_at)<=1?'Healthy':daysAgo(x.last_sync_at)<=7?'Stale':'Needs attention'):'No cloud sync')}
+      ${line('Email',x.email||'Not added')}${line('Mobile',x.phone||'Not added')}${line('Account Created',fmt(x.created_at))}${line('Last Login',fmt(x.last_sign_in_at))}${line('Last Cloud Sync',fmt(x.last_sync_at))}${line('Support Access',x.support_access_until&&new Date(x.support_access_until)>new Date()?'Granted until '+fmt(x.support_access_until):'Not granted')}${line('Data Health',x.last_sync_at?(daysAgo(x.last_sync_at)<=1?'Healthy':daysAgo(x.last_sync_at)<=7?'Stale':'Needs attention'):'No cloud sync')}${line('App Version',x.app_version||'Not reported')}${line('Last Seen',fmt(x.last_seen_at))}${line('Device',x.last_client_info?.platform||'Not reported')}
     </div>
     <div class="usage">${usage('Products',st.products)}${usage('Dispatches',st.dispatches)}${usage('Returns / RTO',st.returns)}${usage('Payments',st.payments)}${usage('Expenses',st.expenses)}${usage('Purchases',st.purchases)}${usage('Documents',st.documents)}</div>
 
@@ -172,6 +222,11 @@ function renderCustomerModal(x,audit){
       <div class="field"><label>Account Status</label><select id="mAccount" ${ownerOnly?'':'disabled'}><option value="active" ${x.account_status==='active'?'selected':''}>Active</option><option value="suspended" ${x.account_status==='suspended'?'selected':''}>Suspended</option></select></div>
       <div class="field"><label>Plan</label><select id="mPlan" ${ownerOnly?'':'disabled'}>${['Free','Trial','Basic','Pro','Enterprise'].map(v=>`<option ${x.plan_name===v?'selected':''}>${v}</option>`).join('')}</select></div>
       <div class="field"><label>Subscription</label><select id="mSub" ${ownerOnly?'':'disabled'}>${['active','trial','expired','cancelled'].map(v=>`<option value="${v}" ${x.subscription_status===v?'selected':''}>${v}</option>`).join('')}</select></div>
+      <div class="field"><label>Start Date</label><input id="mSubStart" type="date" value="${esc(x.subscription_start||'')}" ${ownerOnly?'':'disabled'}></div>
+      <div class="field"><label>End Date</label><input id="mSubEnd" type="date" value="${esc(x.subscription_end||'')}" ${ownerOnly?'':'disabled'}></div>
+      <div class="field"><label>Renewal Date</label><input id="mRenewal" type="date" value="${esc(x.renewal_date||'')}" ${ownerOnly?'':'disabled'}></div>
+      <div class="field"><label>Billing Cycle</label><select id="mBilling" ${ownerOnly?'':'disabled'}><option value="">Not set</option>${['Monthly','Quarterly','Yearly'].map(v=>`<option value="${v}" ${x.billing_cycle===v?'selected':''}>${v}</option>`).join('')}</select></div>
+      <div class="field"><label>Subscription Amount</label><input id="mAmount" type="number" min="0" step="0.01" value="${Number(x.subscription_amount||0)}" ${ownerOnly?'':'disabled'}></div>
       <div class="field"><label>Priority</label><select id="mPriority">${['low','normal','high','urgent'].map(v=>`<option value="${v}" ${x.priority===v?'selected':''}>${v}</option>`).join('')}</select></div>
     </div></div>
 
@@ -189,7 +244,7 @@ function renderCustomerModal(x,audit){
 }
 async function saveCustomerAdmin(){
   if(!currentCustomer)return;
-  const payload={p_uid:Number(currentCustomer.uid),p_account_status:currentRole==='owner'?$('mAccount').value:null,p_plan_name:currentRole==='owner'?$('mPlan').value:null,p_subscription_status:currentRole==='owner'?$('mSub').value:null,p_support_note:$('mNote').value,p_support_status:$('mSupport').value,p_priority:$('mPriority').value};
+  const payload={p_uid:Number(currentCustomer.uid),p_account_status:currentRole==='owner'?$('mAccount').value:null,p_plan_name:currentRole==='owner'?$('mPlan').value:null,p_subscription_status:currentRole==='owner'?$('mSub').value:null,p_support_note:$('mNote').value,p_support_status:$('mSupport').value,p_priority:$('mPriority').value,p_subscription_start:currentRole==='owner'?($('mSubStart')?.value||null):null,p_subscription_end:currentRole==='owner'?($('mSubEnd')?.value||null):null,p_renewal_date:currentRole==='owner'?($('mRenewal')?.value||null):null,p_billing_cycle:currentRole==='owner'?($('mBilling')?.value||null):null,p_subscription_amount:currentRole==='owner'?Number($('mAmount')?.value||0):null};
   const {data,error}=await sb.rpc('owner_update_customer',payload);if(error){alert(error.message);return}
   toast('Customer updated');await loadCustomers();await openCustomer(currentCustomer.uid)
 }
@@ -208,7 +263,7 @@ function exportCSV(){
 }
 function line(k,v){return '<div class="line"><span>'+esc(k)+'</span><b>'+esc(v)+'</b></div>'}
 function usage(k,v){return '<div><span>'+esc(k)+'</span><b>'+Number(v||0)+'</b></div>'}
-function closeModal(){$('modalRoot').innerHTML='';currentCustomer=null}
+function closeModal(){$('modalRoot').innerHTML='';currentCustomer=null;currentTicket=null}
 
 sb.auth.onAuthStateChange(async(event,session)=>{if(event==='PASSWORD_RECOVERY'){currentUser=session?.user||null;showNewPasswordForm()}});
 (async()=>{const {data}=await sb.auth.getSession();const recovery=location.hash.includes('type=recovery')||location.search.includes('type=recovery');if(recovery&&data?.session?.user){currentUser=data.session.user;showNewPasswordForm();return}if(data?.session?.user){currentUser=data.session.user;await start()}})();
