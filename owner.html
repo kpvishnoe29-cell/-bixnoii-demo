@@ -129,8 +129,16 @@ async function sendResetLink(){
   resetMsg('');
   const redirectTo=window.location.origin+window.location.pathname;
   const {error}=await sb.auth.resetPasswordForEmail(email,{redirectTo});
-  if(error){resetMsg(error.message);return}
-  resetMsg('Password reset email sent. Open the link in that email to set a new password.','success');
+  if(error){
+    const raw=String(error.message||'').toLowerCase();
+    if(raw.includes('rate limit')||raw.includes('too many')){
+      resetMsg('Too many reset requests. Please wait a while, then try again once. Avoid pressing Send Reset Link repeatedly.');
+    }else{
+      resetMsg(error.message||'Unable to send reset email. Please try again later.');
+    }
+    return;
+  }
+  resetMsg('Password reset email sent. Check your inbox and spam folder, then open the latest reset link.','success');
 }
 function showNewPasswordForm(){
   $('loginGate').classList.add('hidden');
